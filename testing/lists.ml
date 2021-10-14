@@ -1,7 +1,6 @@
 (*Testing lists*)
-
-let l = [1;2;3;4;5;6;7];;
-
+module MyLists = struct
+    exception ListEmpty
 let add list n = match list with
                     [] -> [n]
                     | h::t -> n::list;;
@@ -12,9 +11,27 @@ let rec print_list ls = match ls with
 
 let rec append l n = match l with
     [] -> [n] |
-    h::t -> h:: append t n;;
+    h::t -> h:: append t n
 
+let count x l =
+    let rec boh tot x = function
+        [] -> tot 
+        | h::t -> if h==x then boh (tot+1) x t else boh tot x t
+        in boh 0 x l
 
+let find x l = 
+    let rec find pos x = function
+        [] -> (-1)
+        | h::t -> if h==x 
+            then pos
+            else find (pos+1) x t
+    in find 0 x l
 
-let  l = append l 8;;
-print_list l;;
+let slice l i f = 
+    let rec slice offset i f = function 
+        [] -> raise ListEmpty
+        | h::t -> if (i<=offset && offset <=f)
+            then h::slice (offset+1) i f t
+            else slice (offset+1) i f t
+    in slice 0 i f l
+end
