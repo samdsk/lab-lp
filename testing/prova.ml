@@ -1,10 +1,17 @@
 open Lists
-open Modules
-let l = [2;7;25;3;11;-1;0;7;25;25;0;99;-25;7]
+open Sorting
 
-let q = Modules.PQueue.Empty;;
+let l = [2;7;25;3;11;-1;0;7;25;25;0;99;-25;7];;
 
-module Asd = Modules.App(Modules.A);;
+let y l = match l with
+          h::t -> List.filter (fun x -> x<h) t
+          |[] -> [];;
+let x = Sort.quicksort ( >= ) l ;;
 
-print_int(Asd.s);;
-exit 0
+MyLists.print_list l;;
+print_newline();;
+
+MyLists.print_list x;;
+print_newline();;
+
+exit 0;;

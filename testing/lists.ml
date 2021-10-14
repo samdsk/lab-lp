@@ -7,7 +7,7 @@ module MyLists = struct
 
     let rec print_list ls = match ls with
                             [] -> () |
-                            h::t -> begin print_int h; print_newline (); print_list t end;;
+                            h::t -> begin print_int h; print_string(" "); print_list t end;;
 
     let rec append l n = match l with
         [] -> [n] |
