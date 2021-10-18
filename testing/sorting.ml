@@ -1,6 +1,6 @@
 module Sort = struct
 
-    let quicksort (>:) l =
+    let quicksort_1 (>:) l =
       let rec quicksort = function
         [] -> []
         | h::t -> (quicksort (List.filter(fun x -> (x >: h)) t)) (** una lista in cui tutti valori sono maggiore di h*)
@@ -9,4 +9,11 @@ module Sort = struct
       in quicksort l
 
       (**questo algoritmo esclude valori equivalenti, se uso >= "duplica" valori*)
+
+      
+    let rec quicksort = function
+        | [] -> []
+        | h::t -> let smaller, larger = List.partition (fun x -> x < h) t
+    in quicksort smaller @ (h::quicksort larger)
+        
 end
