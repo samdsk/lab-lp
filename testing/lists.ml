@@ -6,8 +6,8 @@ module MyLists = struct
                         | h::t -> n::list;;
 
     let rec print_list ls = match ls with
-                            [] -> () |
-                            h::t -> begin print_int h; print_string(" "); print_list t end;;
+        [] -> print_string("\n") |
+        h::t -> begin print_int h; print_string(" "); print_list t end;;
 
     let rec append l n = match l with
         [] -> [n] |
@@ -42,5 +42,10 @@ module MyLists = struct
         [] -> []
         | h::t -> if h==x then remove x t
         else h::remove x t
+    
+    let rec remove_once x = function 
+        [] -> []
+        | h::t -> if h==x then t
+        else h::remove_once x t
 
 end
