@@ -48,4 +48,20 @@ module MyLists = struct
         | h::t -> if h==x then t
         else h::remove_once x t
 
+
+    let rec map ~f = function 
+        | [] -> []
+        | h::t -> (f h)::(map f t)
+
+    let rec filter f = function
+        | [] -> []
+        | h::t -> if f h then h::filter f t else filter f t
+    
+    let rec reduce acc f = function
+        | [] -> acc
+        | h::t -> reduce (f acc h) f t
+    
+    let exists p l = reduce false (||) (map p l)
+    let forall p l = reduce true (&&) (map p l)
+        
 end
