@@ -63,5 +63,29 @@ module MyLists = struct
     
     let exists p l = reduce false (||) (map p l)
     let forall p l = reduce true (&&) (map p l)
-        
+
+    let rec zip_longest l1 l2 = match (l1,l2) with
+        | [],[] | [],_ | _,[] -> []
+        | (h1::t1 , h2::t2) -> (h1,h2)::(zip_longest t1 t2)
+
+
+    type 'a group = {mutable g: 'a list}
+    let empty_group = fun x->{g = []}
+
+    let rec group_by f ?(output: 'a group array = Array.init 10 empty_group) = function 
+        |[] -> output
+        | h::t -> output.((f h)).g <- output.((f h)).g@[h]; group_by f ~output:output t
+
+    let rec pairwise = function        
+        | e1::e2::t -> (e1,e2)::(pairwise (e2::t))
+        | _ -> []
+    
+    let enumerate l =
+        let rec enumerate count = function
+            | h::t -> (count,h)::enumerate (count+1) t
+            | [] -> []
+        in enumerate 0 l
+    
+    
+    
 end
