@@ -50,5 +50,6 @@ module Graph : GraphADT = struct
     let adjacents n l = List.map snd (List.filter (fun x -> ((fst x) = n)) l) 
     in function Graph(_, arcs) -> (adjacents n arcs)
 
+
 end
 
