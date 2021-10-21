@@ -1,4 +1,5 @@
-type 'a tree = Leaf of 'a | Tree of ('a * 'a tree list)
+
+type 'a tree = Leaf of 'a | Tree of ('a * ('a tree list)) 
 
 module type GraphADT = sig
   type 'a graph
@@ -8,12 +9,14 @@ module type GraphADT = sig
   val adjacents : 'a -> 'a graph -> 'a list    
   val is_empty : 'a graph -> bool
 
+  val node_is_in_graph : 'a -> 'a graph -> bool
+
   exception TheGraphIsEmpty
   exception TheNodeIsNotInGraph
 
 end
 
-module Graph = struct
+module Graph : GraphADT = struct
   (** (node list), (arc(element_1,element_2)) list *)
   type 'a graph = Graph of ('a list) * (('a * 'a) list)
   
@@ -42,10 +45,11 @@ module Graph = struct
   let add_arc e_sx e_dx = function
     | Graph(nodes,arcs) -> 
         Graph(add_in_list e_sx (add_in_list e_dx nodes), (add_in_list (e_sx,e_dx) arcs))
+
   (** crea una lista filtrando il primo elemento della coppia*)
-  let adjacent n = 
-    let adjacent n l = List.map snd (List.filter (fun x -> ((fst x) = n)) l) 
-    in function Graph(_, arcs) -> adjacent n arcs
+  let adjacents n = 
+    let adjacents n l = List.map snd (List.filter (fun x -> ((fst x) = n)) l) 
+    in function Graph(_, arcs) -> (adjacents n arcs)
 
 end
 
