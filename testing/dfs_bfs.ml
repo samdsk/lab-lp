@@ -26,3 +26,6 @@ let dfs graph v =
     in if(Graphs.Graph.is_empty graph) then raise Graphs.Graph.TheGraphIsEmpty
     else if not(Graphs.Graph.node_is_in_graph v graph) then raise Graphs.Graph.TheNodeIsNotInGraph
     else graph_to_tree (dfs graph v (Graphs.Graph.add_node v (Graphs.Graph.empty())) (Graphs.Graph.adjacents v graph)) v
+
+
+

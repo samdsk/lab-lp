@@ -1,4 +1,3 @@
-
 type 'a tree = Leaf of 'a | Tree of ('a * ('a tree list)) 
 
 module type GraphADT = sig
