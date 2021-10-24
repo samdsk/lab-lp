@@ -1,3 +1,4 @@
+module Matrix = struct
 type matrix = (int list) list
 let zeroes n m = List.init n (fun x -> List.init m (fun y -> 0)) 
 
@@ -34,3 +35,5 @@ let ( * ) m_a m_b =
     let columns = transpose rows_b 
   in List.map (fun row -> List.map (dotprod row) columns) rows_a
 in prod m_a m_b
+
+end
