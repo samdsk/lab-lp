@@ -19,7 +19,7 @@ let rec insert m l = match l with
 
 let reader line word_list = 
   let lowered = (String.lowercase_ascii (line)) in
-    let rg = Str.regexp "[ )(*,?\\.!_]+" in 
+    let rg = Str.regexp "[ )(),:-_]+" in 
       let cleaned = Str.split rg lowered in 
         insert word_list cleaned 
 
