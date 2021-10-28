@@ -10,28 +10,27 @@ module P = struct
     | "/" -> (match op2 with
       | "+" | "-" | "(" -> op1
       | _ -> op2)
-    | "+" -> (match op2 with
-      | "-" | "(" -> op1
-      | _ -> op2)
-    | "-" -> (match op2 with
+    | "+" | "-" -> (match op2 with
       | "(" -> op1
       | _ -> op2)
     | _ -> op1
   
+  let rec push_in_order op1 s op =
+      if (Stack.is_empty op) then Stack.push op1 op
+      else let op2 = order op1 (Stack.top op ) in
+      if op1 = op2 then (Stack.push op1 op) 
+      else  
+        begin
+        (Stack.push (Stack.pop op) s);
+        
+        push_in_order op1 s op         
+        end
+   
   let rec output s temp = 
     let top = Stack.pop temp in 
       if Stack.is_empty temp then 
         Stack.push top s
       else begin Stack.push top s; output s temp end
- 
-  let rec push_in_order op1 s op =
-    let op2 = order op1 (Stack.top op ) in
-    if op1 = op2 then (Stack.push op1 op) 
-    else  
-      begin
-      (Stack.push (Stack.pop op) s);
-      push_in_order op1 s op         
-      end
  
   let rec close_parenthesis s temp = 
     let op = Stack.top temp in 
@@ -48,32 +47,6 @@ module P = struct
       if Stack.is_empty s then output
       else begin (Stack.push (Stack.pop s) output); reverse s output end
     in reverse s (empty_expr ())
-
-
-    (**
-(match h with
-            | "-" | "*" | "/" | "+" | "(" ->  
-              print_string (h^ " ");           
-              if(Stack.is_empty op) then 
-                begin Stack.push h op; (create_expr s op t) end
-              else  
-              begin 
-                push_in_order h s op;
-                (create_expr s op t)
-              end
-            | ")" -> close_parenthesis s op;create_expr s op t
-            | _ -> Stack.push h s; create_expr s op t) 
-
-
-            let matching c = match c with
-            | "-" | "*" | "/" | "+" | "(" ->  
-              print_string (c^ " "); Stack.push c op; create_expr s op t
-            | ")" -> print_string (c^ " "); create_expr s op t
-            | _ -> print_string (c^ " "); Stack.push c s; create_expr s op t
-         in matching h
-
-            
-*)
   
   let expr_of_string s = 
     let s_list = (String.split_on_char ' ' s) in
@@ -136,4 +109,4 @@ let () = Stack.push "5" s
 
 
 let () = P.print_expr (P.reverse s)
-let () = P.print_expr (P.expr_of_string ("3 + 4 * 5"))
+let () = P.print_expr (P.expr_of_string ("3 - 4 * 4"))
