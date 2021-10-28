@@ -3,6 +3,7 @@ module P = struct
   type expr = string Stack.t
 
   let empty_expr = fun () -> Stack.create()
+  
   let order op1 op2 = match op1 with
     | "*" -> (match op2 with
       | "+" | "-" | "/" | "(" -> op1 
