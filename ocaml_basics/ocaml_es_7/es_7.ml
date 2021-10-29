@@ -1,8 +1,22 @@
-(**ERROR!!! not working *)
-module P = struct
-  type expr = string Stack.t
+module type StackADT =
+sig
+  type 'a t = 'a Stdlib__stack.t
 
-  let empty_expr = fun () -> Stack.create()
+  exception Empty
+  val create : unit -> 'a t
+  val push : 'a -> 'a t -> unit
+  val pop : 'a t -> 'a
+  val top : 'a t -> 'a
+  val is_empty : 'a t -> bool
+  val length : 'a t -> int
+  val iter : ('a -> unit) -> 'a t -> unit
+end
+
+module P (S : StackADT) = struct
+  type expr = string S.t
+
+  exception Error
+  let empty_expr = fun () -> S.create()
   
   let order op1 op2 = match op1 with
     | "*" -> (match op2 with
@@ -16,37 +30,31 @@ module P = struct
       | _ -> op2)
     | _ -> op1
   
-  let rec push_in_order op1 s op =
-      if (Stack.is_empty op) then Stack.push op1 op
-      else let op2 = order op1 (Stack.top op ) in
-      if op1 = op2 then (Stack.push op1 op) 
+  let rec reorder_op op1 s op =
+      if (S.is_empty op) then S.push op1 op
+      else let op2 = order op1 (S.top op ) in
+      if op1 = op2 then (S.push op1 op) 
       else  
         begin
-        (Stack.push (Stack.pop op) s);
+        (S.push (S.pop op) s);
         
-        push_in_order op1 s op         
+        reorder_op op1 s op         
         end
-   
-  let rec output s temp = 
-    let top = Stack.pop temp in 
-      if Stack.is_empty temp then 
-        Stack.push top s
-      else begin Stack.push top s; output s temp end
  
   let rec close_parenthesis s temp = 
-    let op = Stack.top temp in 
+    let op = S.top temp in 
       match op with
-      | "(" -> ignore (Stack.pop temp)
-      | _ -> Stack.push (Stack.pop temp) s; close_parenthesis s temp
+      | "(" -> ignore (S.pop temp)
+      | _ -> S.push (S.pop temp) s; close_parenthesis s temp
 
-  let rec unify_stacks s temp =     
-      if (Stack.is_empty temp) then s
-      else begin (Stack.push (Stack.pop temp) s); (unify_stacks s temp) end  
+  let rec merge s temp =     
+      if (S.is_empty temp) then s
+      else begin (S.push (S.pop temp) s); (merge s temp) end  
   
   let reverse s = 
     let rec reverse s output = 
-      if Stack.is_empty s then output
-      else begin (Stack.push (Stack.pop s) output); reverse s output end
+      if S.is_empty s then output
+      else begin (S.push (S.pop s) output); reverse s output end
     in reverse s (empty_expr ())
   
   let expr_of_string s = 
@@ -56,58 +64,53 @@ module P = struct
           | [] -> s,op    
           | h::t -> (match h with
           | "-" | "*" | "/" | "+" | "(" ->                     
-            if(Stack.is_empty op) then 
-              begin Stack.push h op; (create_expr s op t) end
+            if(S.is_empty op) then 
+              begin S.push h op; (create_expr s op t) end
             else  
             begin 
-              push_in_order h s op;
+              reorder_op h s op;
               (create_expr s op t)
             end
           | ")" -> close_parenthesis s op;create_expr s op t
-          | _ -> Stack.push h s; create_expr s op t) 
+          | _ -> S.push h s; create_expr s op t) 
 
         in create_expr (empty_expr ()) (empty_expr ()) s_list
-      in reverse(unify_stacks (fst output) (snd output))
+      in reverse(merge (fst output) (snd output))
 
   let rec print_expr e =    
-    if (Stack.is_empty e) then print_newline ()
-    else begin print_string((Stack.pop e)^" ") ; (print_expr e) end
+    if (S.is_empty e) then print_newline ()
+    else begin print_string((S.pop e)^" ") ; (print_expr e) end
+ 
+  let exec n1 n2 = function
+  | "*" -> (n1*n2)
+  | "-" -> (n2-n1)
+  | "/" -> (n1/n2)
+  | "+" -> (n1+n2)
+  | _ -> raise Error
 
-(*
   let eval e = 
-    let rec eval output e =
-      if (Stack.is_empty (fst e)) then output
-      else if (Stack.is_empty (snd e)) then output
-      else begin 
-        let op = Stack.pop (fst e) in          
-          let n1 = Stack.pop (snd e) in 
-            if (Stack.is_empty (snd e)) then output
-            else begin
-              let n2 = Stack.pop (snd e) in 
-                match op with 
-                | "*" -> Stack.push (n1*n2) (snd e); eval (Stack.top (snd e)) e
-                | "/" -> Stack.push (n1/n2) (snd e); eval (Stack.top (snd e)) e
-                | "+" -> Stack.push (n1+n2) (snd e); eval (Stack.top (snd e)) e
-                | "-" -> Stack.push (n1-n2) (snd e); eval (Stack.top (snd e)) e
-                | _ -> 0 temp
-                
-            end
-      end
-    in eval 0 e
-
-*)
-
+    let rec eval e nums = 
+      
+      let n = S.pop e in
+        match n with 
+        | "*" | "-" | "/" | "+" -> 
+          let n_1 = S.pop nums in 
+            let n_2 = S.pop nums in
+              let r = exec n_1 n_2 n in
+                if (S.is_empty e) then r
+                else begin
+                S.push r nums; eval e nums
+                end        
+        | _ -> S.push (int_of_string n) nums; eval e nums
+          
+    in eval e (empty_expr())    
 end
 
-let () = print_string("Prova\n")
+module M = P(Stack)
+let s = M.expr_of_string ("25 - 4 * 4") (** ("4 * 5 + 6 - 7") ("3 - 4 * 4")*)
+let v = M.eval s
 
-let s = Stack.create()
-let () = Stack.push "1" s
-let () = Stack.push "2" s
-let () = Stack.push "3" s
-let () = Stack.push "4" s
-let () = Stack.push "5" s
-
-
-let () = P.print_expr (P.reverse s)
-let () = P.print_expr (P.expr_of_string ("3 - 4 * 4"))
+let () = print_string ((string_of_int v)^"\n")
+(*
+let () = P.print_expr s
+*)
