@@ -87,13 +87,7 @@ let add_kinship a b = function
 let add_sexual_rel a b = function
   | EmptyNetwork -> raise NetworkIsEmpty
   | Network(l) -> add_operation a b l Relationship
-
-
-
-
-
-
-
+  
 
 let a = create_person "Alice"
 let b = create_person "Bob"
