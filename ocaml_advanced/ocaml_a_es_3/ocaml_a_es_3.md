@@ -26,14 +26,12 @@ Your solution should follow the following rules:
 
 *    The input is just a series of titles, one per line. Any leading or trailing spaces should be removed. Internal spaces should be retained (trimmed to one).
 *    A word is a maximal sequence of non-blank characters.
-*    The output line is at most 79 characters wide.
- 
+*    The output line is at most 79 characters wide. 
     * The number is 5 characters wide, right-justified.
     * There is a space after the number.
     * The key word starts at position 40 (numbering from 1).
     *   If the part of the title left of the keyword is longer than 33, trim it (on the left) to 33.
-    *   If the part of the keyword and the part to the right is longer than 40, trim it to 40.
-    
-*    Each title appears in the output once for each word that isn't **minor**. Any word of length two or less is minor, and and the words are minor words.
+    *   If the part of the keyword and the part to the right is longer than 40, trim it to 40.    
+*    Each title appears in the output once for each word that isn't **minor**. Any word of length two or less is minor, `and` and `the` words are minor words.
 *    If a title has a repeated word, it should be listed for each repetition.
 *    Sorting should be case-insensitive.
