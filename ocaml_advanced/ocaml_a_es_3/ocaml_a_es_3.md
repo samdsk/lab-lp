@@ -27,7 +27,7 @@ Your solution should follow the following rules:
 *    The input is just a series of titles, one per line. Any leading or trailing spaces should be removed. Internal spaces should be retained (trimmed to one).
 *    A word is a maximal sequence of non-blank characters.
 *    The output line is at most 79 characters wide.
-*    
+ 
     * The number is 5 characters wide, right-justified.
     * There is a space after the number.
     * The key word starts at position 40 (numbering from 1).
