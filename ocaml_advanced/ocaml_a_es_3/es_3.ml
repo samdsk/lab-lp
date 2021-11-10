@@ -25,7 +25,9 @@ let rec remove_excess_space = function
 let trimmed lines = 
   let rec trim output = function
     | [] -> output
-    | (n,h)::t -> trim ((n,remove_excess_space(String.split_on_char ' ' (String.trim h)))::output) t 
+    | (n,h)::t -> 
+      let s = remove_excess_space(String.split_on_char ' ' (String.trim h)) in 
+      trim ((n,s,s)::output) t 
   in trim [] lines
 
 (*If words is equal to the, and or of it's a 2 char length string return true otherwise false*)
@@ -44,7 +46,7 @@ in how_many 0 line
 let make_duplicates lines = 
   let rec duplicate output = function
     | [] -> lines@output
-    | (_,s) as h::t ->
+    | (_,s,_) as h::t ->
         let rec append h count output = 
           if count < 2 then output 
           else 
@@ -54,21 +56,23 @@ let make_duplicates lines =
         in duplicate (append h (how_many_major_words s) output) t
 in duplicate [] lines  
 
-let compare = fun x y -> if String.lowercase_ascii x>= String.lowercase_ascii y then 1 else -1
+let compare = fun x y -> if String.lowercase_ascii(fst(x))>=String.lowercase_ascii(fst(y)) then 1 else -1
+
+let sorted l = 
+  let rec sorted l output = match l with 
+    | [] -> List.rev output
+    | (n,words,s) ::t -> sorted l ((n,(List.sort String.compare words),s)::output )
+  in sorted l []
 
 (*Builds a new list with smallest word in the line*)
-let build_sorted_and_filtered_list lines min_words = 
+let build_list lines min_words = 
   let rec build output = function
     | [] -> output
-    | (_,s) as h::t ->        
-        let sorted = (List.sort compare s) in 
-        let filtered = List.filter_map 
-        (fun x -> 
-          if (List.exists 
-            (fun y -> x=y) min_words) || (word_to_escape x) 
-          then None 
-          else Some(x)) sorted 
-    in build (((List.hd filtered),h)::output) t
+    | (_,words,_) as h::t ->
+      let rec filtered = function
+        | [] -> ""
+        | word::t_words -> if (word_to_escape word) || (List.exists (fun x -> x=word) min_words) then filtered t_words else word      
+    in build ((filtered words,h)::output) t
   in build [] lines
 
 (*Finds position of the smallest word in the lines*)
@@ -78,9 +82,7 @@ let find_offset words min =
     | h::t -> if h=min then offset else build (offset+(String.length h)+1) t
 in build 0 words
 
-let compare_mylist = fun x y -> if String.lowercase_ascii(fst(x))>=String.lowercase_ascii(fst(y)) then 1 else -1
-
-let sort_lines_for_print lines = List.sort compare_mylist lines
+let sort_lines_for_print lines = List.sort compare lines
 
 let rec equals l1 l2 = match l1,l2 with
   | [],[] -> true
@@ -89,20 +91,20 @@ let rec equals l1 l2 = match l1,l2 with
 
 let rec remove_line line = function
   | [] -> []
-  | (n,words) as h::t ->
+  | ((n,_,s)) as h::t ->
     match line with
-      (_,(nl,wordsl)) -> 
-       if (nl=n) && equals wordsl words then t else h::(remove_line line t)
+      (_,(nl,_,sl)) -> 
+       if (nl=n) && equals sl s then t else h::(remove_line line t)
 
 let print lines = 
   let rec print min_words lines = match lines with
     | [] -> print_newline()
     | _ -> 
-      let line = List.hd (sort_lines_for_print (build_sorted_and_filtered_list lines min_words))
+      let line = List.hd (sort_lines_for_print (build_list lines min_words))
       in match line with
-      | min,(n,words) -> 
-        let offset = 37 - (find_offset words min) in 
-        let toString = (String.concat " " words) in 
+      | min,(n,words,s) -> 
+        let offset = 37 - (find_offset s min) in 
+        let toString = (String.concat " " s) in 
         print_string ((string_of_int n)^(String.make offset ' ')^toString^"\n");
         print (min::min_words) (remove_line line lines) 
   in print [""] lines
@@ -110,7 +112,6 @@ let print lines =
 
 let () = read word_list;;
 let lines = trimmed !word_list
-
 
 let lines = make_duplicates lines
 
