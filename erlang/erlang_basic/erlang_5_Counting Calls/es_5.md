@@ -1,0 +1,3 @@
+Write a module `counting` which provides the functionality for interacting with a server that counts how many times its services has been requested.
+
+It has to implement several services `dummy1, ... dummyn` (doesn't matter what they do or their real interface) and a service `tot` that returns a list of records indexed on each service (`tot` included) containing also how many times such a service has been requested. Test it from the shell.
