@@ -1,13 +1,12 @@
 -module(pn).
 -export([parser/1]).
 
-parser(String) -> io:format("~p~n",[parser(String,[],[])]).
+parser(String) -> io:format("~p~n",parser(String,[],[])).
 
 parser([],_,Exp) -> Exp;
 parser([H|T],Stack,Exp) ->
     case H of
-        $( -> Exp ++ [list_to_tuple(parser(T,[H|Stack], []))];    
-
+        $( -> (parser(T,[H|Stack], []));
         $+ -> 
             case is_less(Stack,H) of
                 true -> E1 = [plus | Exp], parser(T,Stack,E1);
@@ -28,7 +27,7 @@ parser([H|T],Stack,Exp) ->
                 true -> E1 = [division | Exp], parser(T,Stack,E1);
                 false -> {E2,S1} = reorder(Stack,H), parser(T,[H|S1],[E2|Exp])
             end;
-        $) -> {S1,E1} = use_stack(Stack,Exp), parser(T, S1, E1);
+        $) -> {S1,E1} = use_stack(Stack,Exp), io:format(" Rest of String ~p ~n",[T]), parser(T, S1, [list_to_tuple(E1)]);
         _ -> parser(T,Stack,Exp++[{num, H}])
     end.
 
