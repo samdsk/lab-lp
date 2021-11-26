@@ -6,29 +6,17 @@ parser(String) -> io:format("~p~n",parser(String,[],[])).
 parser([],_,Exp) -> Exp;
 parser([H|T],Stack,Exp) ->
     case H of
-        $( -> (parser(T,[H|Stack], []));
-        $+ -> 
-            case is_less(Stack,H) of
-                true -> E1 = [plus | Exp], parser(T,Stack,E1);
-                false -> S1 = reorder(Stack,H), parser(T,S1,Exp)
-            end;
-        $- -> 
-            case is_less(Stack,H) of
-                true -> E1 = [minus | Exp], parser(T,Stack,E1);
-                false -> {E2,S1} = reorder(Stack,H), parser(T,[H|S1],[E2|Exp])
-            end;
-        $* -> 
-            case is_less(Stack,H) of
-                true -> E1 = [multi | Exp], parser(T,Stack,E1);
-                false -> {E2,S1} = reorder(Stack,H), parser(T,[H|S1],[E2|Exp])
-            end;
-        $/ -> 
-            case is_less(Stack,H) of
-                true -> E1 = [division | Exp], parser(T,Stack,E1);
-                false -> {E2,S1} = reorder(Stack,H), parser(T,[H|S1],[E2|Exp])
-            end;
-        $) -> {S1,E1} = use_stack(Stack,Exp), io:format(" Rest of String ~p ~n",[T]), parser(T, S1, [list_to_tuple(E1)]);
-        _ -> parser(T,Stack,Exp++[{num, H}])
+        $( -> parser(T,[H|Stack], []);
+        $) -> {S1,E1} = use_stack(Stack,Exp), parser(T, S1, [list_to_tuple(E1)]);
+        _ -> Check = lists:member(H, [$+,$-,$*,$/,$^]), 
+            case Check of
+            true ->
+                case is_less(Stack,H) of
+                    true -> E1 = [which_op(H) | Exp], parser(T,Stack,E1);
+                    false -> S1 = reorder(Stack,H), parser(T,S1,Exp)
+                end;
+            false ->  parser(T,Stack,Exp++[{num, list_to_integer([H])}])
+            end
     end.
 
 use_stack([],Exp) ->{[],Exp};
