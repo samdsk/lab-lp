@@ -1,19 +1,52 @@
 -module(pn).
--export([parser/1]).
+-export([parser/1,eval/1]).
 
-parser(String) -> io:format("~p~n",parser(String,[],[])).
 
-parser([],_,Exp) -> Exp;
+eval(Exp) ->     
+    {Op,Num} = make_stack(Exp,[],[]),
+    io:format("~p ~p ~n",[Op,Num]),
+    eval(Op,Num).
+
+eval([],[H]) -> H;
+eval([Op|T1],[N1,N2|T2]) ->
+    io:format("~p ~p ~p ~n",[Op,N1,N2]),
+    case Op of
+        minus -> eval(T1,[(N1-N2)|T2]);
+        plus -> eval(T1,[(N1+N2)|T2]);
+        division ->eval(T1,[(N1/N2)|T2]);
+        multi -> eval(T1,[(N1*N2)|T2])
+    end.
+        
+
+make_stack([],Op,Num) -> {lists:reverse(Op),lists:reverse(Num)};
+make_stack([H|T],Op,Num) ->
+    case is_list(H) of
+        false -> case is_op(H) of
+                    true -> make_stack(T,[H|Op],Num);
+                    false -> {num, N} = H, make_stack(T,Op,[N|Num])
+                end;
+        true -> {O,N} = make_stack(H,[],[]), make_stack(T, lists:reverse(Op++O),Num++lists:reverse(N))
+    end.
+
+is_op(minus) -> true;
+is_op(plus) -> true;
+is_op(multi) -> true;
+is_op(division) -> true;
+is_op(pow) -> true;
+is_op(_) -> false.
+
+parser(String) -> parser(String,[],[]).
+
+parser([],_,[H]) -> H;
 parser([H|T],Stack,Exp) ->
     case H of
         $( -> parser(T,[H|Stack], []);
-        $) -> {S1,E1} = use_stack(Stack,Exp), parser(T, S1, [list_to_tuple(E1)]);
-        _ -> Check = lists:member(H, [$+,$-,$*,$/,$^]), 
-            case Check of
+        $) -> {S1,E1} = use_stack(Stack,Exp), parser(T, S1, [E1]);
+        _ -> case lists:member(H, [$+,$-,$*,$/,$^]) of
             true ->
                 case is_less(Stack,H) of
-                    true -> E1 = [which_op(H) | Exp], parser(T,Stack,E1);
-                    false -> S1 = reorder(Stack,H), parser(T,S1,Exp)
+                    true -> parser(T,Stack,[which_op(H) | Exp]);
+                    false -> parser(T,reorder(Stack,H),Exp)
                 end;
             false ->  parser(T,Stack,Exp++[{num, list_to_integer([H])}])
             end
