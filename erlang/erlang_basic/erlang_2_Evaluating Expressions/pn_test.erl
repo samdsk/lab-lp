@@ -1,6 +1,14 @@
 -module(pn_test).
 -export([parser/1]).
 
+
+reorder([H|T],Op) -> reorder([H|T],Op,[]).
+reorder([H|T],Op,Output) ->
+    case is_less([H],Op) of
+        true -> [reorder(T,Op,[which_op(H)|Output])];
+        false -> [H|Output]
+    end.
+
 parser(String) -> list_to_tuple(parser(String,[])).
 
 parser([H|T],Stack,Exp) -> 
