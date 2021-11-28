@@ -16,5 +16,3 @@ listen(Next_Pid) ->
         _Q -> io:format("Unknown command in spawned ~p\n",[_Q])
 end.
 
-loop(0,Next_Pid,_) -> Next_Pid ! {quit};
-loop(M,Next_Pid,Msg) -> io:format("Self:~p Next:~p Msg:~p M:~p~n",[self(),Next_Pid,Msg,M]), Next_Pid ! {msg,Msg,M-1}.
