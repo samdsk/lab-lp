@@ -1,13 +1,13 @@
 -module(client).
--export([init/1,send/2,listen/0]).
+-export([init/0,send/2]).
 
-init(Server) -> spawn(
-    fun() -> 
-        process_flag(trap_exit, true),
-        link(Server),
-        listen()
-    end
-).
+init() -> spawn(fun() -> 
+    process_flag(trap_exit, true), 
+    Server = spawn_link(echo,loop,[]),
+    register(echo_server,Server),
+    listen()
+end).
+
 
 listen() -> 
     receive 
