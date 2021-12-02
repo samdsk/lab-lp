@@ -1,0 +1,1 @@
+-record(person, {name=none, surname=none, age=-1, friends=[]}).
