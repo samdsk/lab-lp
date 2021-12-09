@@ -2,7 +2,7 @@
 -export([start/0,client/0]).
 
 client() -> register(client,spawn(fun() -> 
-    master ! {reverse,"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"},
+    master ! {reverse,"abcdefghijklmnopqrstuvwxyz"},
     receive
         Any -> io:format("Client ~p\n",[Any])
 end
@@ -27,9 +27,10 @@ end.
 long_reverse_string() ->
     receive 
         {reverse,String} -> 
-            N = string:length(String) rem 10,
+            Len = string:length(String),
+            N = Len rem 10,
             register(collect,spawn_link( fun() -> collect(maps:new(), 0)   end)),
-            init_slaves(N,0,String);
+            init_slaves(N,0,Len div 10,String);
             
         
         _Any -> io:format("Error long reverse\n")
@@ -50,28 +51,24 @@ end.
 
 
 
-init_slaves(_,9,String) ->
+init_slaves(_,9,Split_point,String) ->
     Pid = spawn_link(fun() -> reverse_string() end),
-    io:format("Spawn sub process: ~p:~p, S1: ~p\n",[9,Pid,String]),
+    %io:format("Spawn sub process: ~p:~p, S1: ~p\n",[9,Pid,String]),
     Pid ! {rev,9,String};
 
-init_slaves(N,M,String) when M=<N  ->
-    Split_point = (string:length(String) div 10) +1,
-    io:format("split point ~p\n",[Split_point]),
-    {S1,Rest} = lists:split(Split_point, String),
+init_slaves(N,M,Split_point,String) when M<N  ->
+    {S1,Rest} = lists:split(Split_point+1, String),
     Pid = spawn_link(fun() -> reverse_string() end),
-    io:format("Spawn sub process: ~p:~p, S1: ~p, Rest: ~p\n",[M,Pid,S1,Rest]),
+    %io:format("Spawn sub process: ~p:~p, S1: ~p, Rest: ~p\n",[M,Pid,S1,Rest]),
     Pid ! {rev,M,S1},
-    init_slaves(N,M+1,Rest);
+    init_slaves(N,M+1,Split_point,Rest);
 
-init_slaves(N,M,String) ->
-    Split_point = (string:length(String) div 10),
-    io:format("split point ~p\n",[Split_point]),
+init_slaves(N,M,Split_point,String) ->  
     {S1,Rest} = lists:split(Split_point, String),
     Pid = spawn_link(fun() -> reverse_string() end),
-    io:format("Spawn sub process: ~p:~p, S1: ~p, Rest: ~p\n",[M,Pid,S1,Rest]),
+    %io:format("Spawn sub process: ~p:~p, S1: ~p, Rest: ~p\n",[M,Pid,S1,Rest]),
     Pid ! {rev,M,S1}, 
-    init_slaves(N,M+1,Rest).
+    init_slaves(N,M+1,Split_point,Rest).
 
 reverse_string() -> 
     receive 
