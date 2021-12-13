@@ -1,17 +1,25 @@
 -module(hyper).
--export([create/0]).
+-compile(export_all).
+%-export([create/0]).
 
 create() ->
-    L = ["0000","0001","0011","0010","0110","0100","0101","0111","1111","1110","1100","1101","1001","1011","1010","1000"],
-    Neighbours = maps:from_list([ {X,find_neighbours(X,L,[])} || X <- L]),
-    io:format("~p\n",[Neighbours]),
-    Pids = maps:from_list([{X,spawn_link(fun() -> sub(X,maps:get(X,Neighbours))end)} || X <- L]).
+    L = gray(4),
+    Neighbours = maps:from_list([ {X,find_neighbours(X,L,[])} || X <- L]),    
+    Pids = maps:from_list([{X,spawn_link(fun() -> sub(X,maps:get(X,Neighbours))end)} || X <- L]),
+    register('0000',maps:get("0000",Pids)).
 
 sub(Node,[H|T] = Neighbours) ->
-    io:format("Spawned: ~p -> ~p\n",[Node,Neighbours])
+    io:format("Spawned: ~p -> ~p\n",[Node,Neighbours]),
     receive
-        {pass,N} -> 
+        {msg,{src,H,msg,Msg},Path} -> true
 end.
+
+hamilton(Msg, [H|Path]) ->
+    '0000' ! {msg,{src,H,msg,Msg},Path},
+    receive 
+        Any -> io:format("~p\n",[Any])
+end.
+
 
 
 find_neighbours(_,[],Output) -> Output;
@@ -29,4 +37,8 @@ myxor(S,R,N,Output) ->
         false -> myxor(S,R,N+1,Output+1)
     end.
 
-
+gray(0) -> [""];
+gray(N) ->
+    L1 = gray(N-1),
+    L2 = lists:reverse(L1),
+    ["0"++X || X <- L1]++["1"++X || X<-L2].
