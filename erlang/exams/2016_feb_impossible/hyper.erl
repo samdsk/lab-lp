@@ -1,25 +1,48 @@
 -module(hyper).
 -compile(export_all).
 %-export([create/0]).
+test()-> create(), hamilton("Hello", gray(4)).
 
 create() ->
     L = gray(4),
     Neighbours = maps:from_list([ {X,find_neighbours(X,L,[])} || X <- L]),    
-    Pids = maps:from_list([{X,spawn_link(fun() -> sub(X,maps:get(X,Neighbours))end)} || X <- L]),
-    register('0000',maps:get("0000",Pids)).
+    io:format("Neighbours: ~p\n",[Neighbours]),
+    Pids = [{X,spawn_link(fun() -> sub(X)end)} || X <- L],
+    send_neigbour_pids(Pids, Pids, Neighbours),
+    {_,Pid} = lists:keyfind("0000",1,Pids),
+    register('0000',Pid).
 
-sub(Node,[H|T] = Neighbours) ->
-    io:format("Spawned: ~p -> ~p\n",[Node,Neighbours]),
+send_neigbour_pids([],_,_) -> io:format("Sent pids\n");
+send_neigbour_pids([{S,Pid}|T],Pids,Neighbours) ->
+    io:format("S:~p:~p\n",[S,Pid]),
+    L = maps:get(S,Neighbours),
+    Pid ! {neighbours, find_nPids(Pids, L)},
+    send_neigbour_pids(T,Pids,Neighbours).
+
+find_nPids(Pids,L) -> [lists:keyfind(X,1,Pids)|| X<-L].
+
+sub(Node) ->
+    %io:format("Spawned: ~p - waiting for neighbours pids\n",[Node]),
     receive
-        {msg,{src,H,msg,Msg},Path} -> true
+        {neighbours,List} -> listen(Node,List)
 end.
 
-hamilton(Msg, [H|Path]) ->
-    '0000' ! {msg,{src,H,msg,Msg},Path},
+listen(Node,List) ->
+    io:format("Ready: ~p -> ~p - pids ~p\n",[Node,self(),List]),
+    receive
+        {msg,Msg,[_,Next | Path]} = M ->  
+            {_,NextPid} = lists:keyfind(Next,1,List),
+            io:format("Node: ~p Next: ~p Find:~p\n",[Node,Next,NextPid]),
+            NextPid ! {msg,{src,Node,msg,Msg},Path},listen(Node,List);
+        {msg,_Msg,[]} = M -> io:format("End ~p\n",M)
+end.
+
+    
+hamilton(Msg, Path) ->
+    '0000' ! {msg,Msg,Path},
     receive 
         Any -> io:format("~p\n",[Any])
 end.
-
 
 
 find_neighbours(_,[],Output) -> Output;
