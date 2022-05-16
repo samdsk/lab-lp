@@ -1,9 +1,10 @@
-object test{
-    def main(args:Array[String]) :Unit = {
-        println("Hello World!");
-        test("ciao");
-    }
+class C{
+    println("ciao "+mondo);
+    val mondo = "ciao"
+}
 
-    def test(prova : String) = println(prova);
-    
+object test{
+    def main(args: Array[String]) : Unit = {
+        new C;
+    }
 }
