@@ -24,6 +24,11 @@ object es1{
         is_palidrome(arr,0,(arr.length-1),simbols)
     }
 
+    def is_palidrome_v2(str: String) : Boolean = {
+        val cleaned = str.filterNot( x => List(' ', ',', '.', '!' , '?' , ' ').contains(x)).toLowerCase
+        cleaned.equals(cleaned.reverse)
+    }
+
     def is_an_anagram(input : String, words : List[String]) : Boolean = {
 
         def is_anagram(input : String, words : List[String]) : Boolean = words match {
@@ -36,13 +41,19 @@ object es1{
         is_anagram(sorted(input),words)
     }
 
-    def factors(input : Int) : List[Int] = {
-        def factors(n : Int, div : Int) : List[Int] = {
-            for( x <- 2 until (n/2)  if )
-        }
+    def is_an_anagram_v2(s: String, words : List[String]) : Boolean = {
+        words.map( word => word.toSeq.sorted.unwrap)
+        .filter(word => word.equals( s.toSeq.sorted.unwrap))
+        .lengthIs > 0
+
+    }
+
+    def factors(num : Int) : List[Int] = {
+       
     }
 
     def main(args : Array[String]) : Unit = {
-        println(is_an_anagram("ciao", List("asd", "ac", "ergs")))
+        val words = List("abba","dog","iaoc", "prova")
+        println(is_an_anagram_v2("cawer",words))
     } 
 }
