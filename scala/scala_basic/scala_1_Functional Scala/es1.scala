@@ -49,11 +49,17 @@ object es1{
     }
 
     def factors(num : Int) : List[Int] = {
-       
+       var r = 2 to (Math.sqrt(num).toInt)
+       var l = List[Int]()
+       for(i <- r if num%i==0){
+            l = i::l
+            println(l)
+       }
+       l
     }
 
     def main(args : Array[String]) : Unit = {
-        val words = List("abba","dog","iaoc", "prova")
-        println(is_an_anagram_v2("cawer",words))
+        //val words = List("abba","dog","iaoc", "prova")
+        println(factors(16).toString)
     } 
 }
