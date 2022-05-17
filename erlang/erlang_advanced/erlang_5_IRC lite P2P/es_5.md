@@ -1,0 +1,3 @@
+Consider the IRC lite application shown in the lectures and re-engineer it to support a more peer-to-peer architecture where each client is connected via a socket to all the other clients that join to the same IRC channel.
+
+Note that also joining/unjoining could be dealt in a peer-to-peer fashion by sending the message (both joining or unjoining) to a client which propagate the action to the other clients.
