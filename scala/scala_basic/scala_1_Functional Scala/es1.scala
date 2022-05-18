@@ -42,24 +42,32 @@ object es1{
     }
 
     def is_an_anagram_v2(s: String, words : List[String]) : Boolean = {
-        words.map( word => word.toSeq.sorted.unwrap)
-        .filter(word => word.equals( s.toSeq.sorted.unwrap))
-        .lengthIs > 0
+        words.map( word => word.toSeq.sorted.mkString)
+        .filter(word => word.equals( s.toSeq.sorted.mkString))
+        .length > 0
 
     }
 
     def factors(num : Int) : List[Int] = {
-       var r = 2 to (Math.sqrt(num).toInt)
-       var l = List[Int]()
-       for(i <- r if num%i==0){
-            l = i::l
-            println(l)
+
+       def factors(div : Int, num : Int, limit:Int, lst : List[Int]) : List[Int]= {
+
+            num%div match {
+                case _ if div > limit => if (lst.isEmpty) num::lst else lst
+                case 0 => factors(div,num/div,limit,div::lst)                            
+                case _ => factors(div+1,num,limit,lst)
+            }
        }
-       l
+
+       factors(2,num,num/2,Nil)
     }
 
     def main(args : Array[String]) : Unit = {
         //val words = List("abba","dog","iaoc", "prova")
-        println(factors(16).toString)
+        println(s"79 ${factors(79)}")
+        println(s"16 ${factors(16)}")
+        println(s"35 ${factors(35)}")
+        println(s"81 ${factors(81)}")
+        println(s"24 ${factors(24)}")
     } 
 }
