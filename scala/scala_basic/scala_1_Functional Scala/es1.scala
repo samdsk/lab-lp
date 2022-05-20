@@ -62,6 +62,10 @@ object es1{
        factors(2,num,num/2,Nil)
     }
 
+    def is_proper(num : Int) : Boolean = {
+        List.range(1,num/2 + 1).filter(x => num%x == 0).fold(0)((x, y) => x + y) == num
+    }
+
     def main(args : Array[String]) : Unit = {
         //val words = List("abba","dog","iaoc", "prova")
         println(s"79 ${factors(79)}")
