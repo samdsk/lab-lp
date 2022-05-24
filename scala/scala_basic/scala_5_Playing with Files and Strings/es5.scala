@@ -10,18 +10,22 @@ class KWIC(private val list : List[String]){
 
     val width = 40
 
-    //def first_word(s : String, l : List[Title]) = l.map( t => (t.next(s),t)).sortWith( (x,y) => x._1._2 < y._1._2).head
-    def first_word(s : String, l : List[Title]) = l.map( t => t.next(s) match{
-        case data if data != null => (data,t)
-        case _ => Nil
-    }).filter(_ != ())
-    //.filterNot(x => x == ()).sortWith( (x,y) => x._1._2 < y._1._2).head
+    def first_word(s : String, l : List[Title]) = ({
+        def first_word(s : String, l : List[Title], acc : List[((Int,String),Title)]) : List[((Int,String),Title)] = l match{
+            case h :: t if h.next(s) != null =>  first_word(s,t, (h.next(s),h) :: acc)
+            case h :: t if h.next(s) == null =>  first_word(s,t, acc)
+            case _ => acc
+        }
+
+        first_word(s,l,Nil)
+    }).sortWith( (x,y) => x._1._2 < y._1._2)
+
     def align(data : (Int,String),t :Title) ={
 
         var output = ""
         val len = t.toString.length
 
-        if(data._1 <= 18){
+        if(data._1 < 18){
             output += "-" * (17-data._1) + t.toString 
         }else{
             output += t.toString.substring(data._1 - 17)
@@ -43,11 +47,23 @@ class KWIC(private val list : List[String]){
     def build() = {
         def build(input : List[Title], s :String) : Unit = input match{
             case h::t => {
-                val ((i,str),t) = first_word(s,input)
-                printline((i,str),t)
-                //println(data._1._1,data._1._2,data._2)
-                //printline((i,s),t)
-                build(remove(t,input),str )
+                val a = first_word(s,input)
+                var s_1 = ""
+                //println(a)
+                if(!a.isEmpty){
+
+                    val ((i,str),t) = a.head
+                    s_1 = str
+                    printline((i,str),t)
+                    //println((i,str),t)
+                    //println(data._1._1,data._1._2,data._2)
+                    //printline((i,s),t)
+                    build(remove(t,input),str )
+                }else{
+                    build(input,s_1)
+                }
+                
+                
             }
             case _ => Unit
         }
@@ -60,14 +76,14 @@ class Title(val phrase : String, val n : Int){
     if (phrase == null | n <= 0) 
         throw new IllegalArgumentException("Phrase can't be null or n == 0")
 
-    val filter_words_list = List("to", "and", "the")
+    val filter_words_list = List("to", "and", "the","for", "of","but")
     
     val positions = {
         var i = 0
         var prev = 0
         (for(w <- this.phrase.split(' ')
             .toList
-            .filterNot( x => filter_words_list.contains(x)) )  
+            )  
         yield {
             if(prev == 0){
                 prev = w.length
@@ -77,18 +93,40 @@ class Title(val phrase : String, val n : Int){
                 prev = w.length
                 (i,w)
             }
-        }).sortWith((x,y) => x._2 < y._2)
+        }).filterNot( x => filter_words_list.contains(x._2.toLowerCase)).sortWith((x,y) => x._2 < y._2)
     }
 
     val words_count = positions.length
 
     def next(s : String) : (Int,String) = s match {
         case _ if s.equals("") => positions.head
-        case _ => {val temp = ((0,s) :: positions).sortWith((x,y) => x._2 < y._2)
-                val i = temp.indexOf((0,s))
-            println(temp.length, i)
-            if(temp.length > i) temp(i+1) 
-            else temp(i)
+        case _ => {val temp = ((-1,s) :: positions).sortWith((x,y) => x._2 < y._2)
+            val i = temp.indexOf((-1,s))
+            //println(temp)
+            //println(s"prima - ${temp.length}, $i")
+            
+            if(temp.length > i+1) {
+                if(s.equals(temp(i+1)._2)) {
+                    //println(s"trovato dup - ${i+1}"); 
+
+                    
+                    if(temp.length > i+2){
+                        //println(temp(i+2)); 
+                        return temp(i+2) 
+                    }else{
+                        return  null 
+                    }
+                    
+                }
+                //println(s"trovato - ${i+1}"); 
+                //println(temp(i+1)); 
+                temp(i+1) 
+            }
+            else {
+                //println("Null"); 
+                //println(temp);
+                null
+            }
         }
     }
 
@@ -112,10 +150,17 @@ object Test {
         //println((new Title(list(3),3)).next("About"))
 
         val k = new KWIC(list)
-        k.first_word("Nation",k.titles)
+        println("ciao")
+/*
+        try{
+            println(k.first_word("Nation",k.titles))
+        }catch{
+            case e : Exception => e.printStackTrace
+        }
+ */       
         //println(k.titles.length)
         //k.remove(k.titles(8),k.titles).length
-        //k.build
+        k.build
         
     }
 }
