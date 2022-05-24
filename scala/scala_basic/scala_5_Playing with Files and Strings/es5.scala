@@ -8,8 +8,8 @@ class KWIC(private val list : List[String]){
             List.fill(p.words_count)(p)
     })
 
-    val width = 40
-
+    val width = 80
+    val half = 39
     def first_word(s : String, l : List[Title]) = ({
         def first_word(s : String, l : List[Title], acc : List[((Int,String),Title)]) : List[((Int,String),Title)] = l match{
             case h :: t if h.next(s) != null =>  first_word(s,t, (h.next(s),h) :: acc)
@@ -25,13 +25,13 @@ class KWIC(private val list : List[String]){
         var output = ""
         val len = t.toString.length
 
-        if(data._1 < 18){
-            output += "-" * (17-data._1) + t.toString 
+        if(data._1 < half){
+            output += "-" * (half-data._1) + t.toString 
         }else{
-            output += t.toString.substring(data._1 - 17)
+            output += t.toString.substring(data._1 - half)
         }
 
-        if(output.length > 36) output.substring(0,35)
+        if(output.length > 79) output.substring(0,79)
         else output
     }
 
