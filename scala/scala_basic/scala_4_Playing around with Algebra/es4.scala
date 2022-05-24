@@ -47,7 +47,7 @@ class intGroup extends Group[Int]{
     def op (a : Int, b : Int) : Int = a + b
 }
 
-class intRing extends Ring[Int]{     
+class intRing extends Ring[Int]{
     val set = Set(1,2,3,4)
     val identity = 0    
     def inverse(a : Int) = (-a)
