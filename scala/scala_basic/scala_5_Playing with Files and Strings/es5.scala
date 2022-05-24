@@ -8,8 +8,8 @@ class KWIC(private val list : List[String]){
             List.fill(p.words_count)(p)
     })
 
-    val width = 80
     val half = 39
+
     def first_word(s : String, l : List[Title]) = ({
         def first_word(s : String, l : List[Title], acc : List[((Int,String),Title)]) : List[((Int,String),Title)] = l match{
             case h :: t if h.next(s) != null =>  first_word(s,t, (h.next(s),h) :: acc)
@@ -47,17 +47,15 @@ class KWIC(private val list : List[String]){
     def build() = {
         def build(input : List[Title], s :String) : Unit = input match{
             case h::t => {
+
                 val a = first_word(s,input)
                 var s_1 = ""
-                //println(a)
+
                 if(!a.isEmpty){
 
                     val ((i,str),t) = a.head
                     s_1 = str
                     printline((i,str),t)
-                    //println((i,str),t)
-                    //println(data._1._1,data._1._2,data._2)
-                    //printline((i,s),t)
                     build(remove(t,input),str )
                 }else{
                     build(input,s_1)
@@ -102,29 +100,18 @@ class Title(val phrase : String, val n : Int){
         case _ if s.equals("") => positions.head
         case _ => {val temp = ((-1,s) :: positions).sortWith((x,y) => x._2 < y._2)
             val i = temp.indexOf((-1,s))
-            //println(temp)
-            //println(s"prima - ${temp.length}, $i")
-            
+
             if(temp.length > i+1) {
                 if(s.equals(temp(i+1)._2)) {
-                    //println(s"trovato dup - ${i+1}"); 
-
-                    
                     if(temp.length > i+2){
-                        //println(temp(i+2)); 
                         return temp(i+2) 
                     }else{
                         return  null 
                     }
-                    
                 }
-                //println(s"trovato - ${i+1}"); 
-                //println(temp(i+1)); 
                 temp(i+1) 
             }
             else {
-                //println("Null"); 
-                //println(temp);
                 null
             }
         }
@@ -147,19 +134,7 @@ object Test {
             "Borat: Cultural Learnings of America for Make Benefit Glorious Nation of Kazakhstan"
         );
 
-        //println((new Title(list(3),3)).next("About"))
-
         val k = new KWIC(list)
-        println("ciao")
-/*
-        try{
-            println(k.first_word("Nation",k.titles))
-        }catch{
-            case e : Exception => e.printStackTrace
-        }
- */       
-        //println(k.titles.length)
-        //k.remove(k.titles(8),k.titles).length
         k.build
         
     }
