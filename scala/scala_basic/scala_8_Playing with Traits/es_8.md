@@ -9,7 +9,7 @@ In our exercise we are going to implement a simplified version of the line edito
 In particular you have to implement a class `editor` representing a line of text with the following operations defined on it:
 
 *    `x` which deletes the character under the cursor (does nothing if no characters are present) and move the cursor on the character on the right if present otherwise back of one;
-*    dw which deletes from the character under the cursor (included) to the next space (excluded) or to the end of the line and moves the cursor on the character on the right if any or backwards otherwise;
+*    `dw` which deletes from the character under the cursor (included) to the next space (excluded) or to the end of the line and moves the cursor on the character on the right if any or backwards otherwise;
 *    `i` which adds a character `c` after the character under the cursor and moves the cursor under `c`
 *    `iw` which adds a word `w` followed by a blank space after the character under the cursor and moves the cursor under the blank space;
 *    `l` which moves the cursor `n` (1 as default, i.e., when nothing is specified) characters on the right from the current position (it does nothing when at the end of the text or it moves less if it is close to the end);
