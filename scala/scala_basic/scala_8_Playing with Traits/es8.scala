@@ -1,5 +1,6 @@
 import java.lang.StringBuilder
 import scala.collection.mutable.ListBuffer
+import scala.languageFeature.postfixOps
 
 trait Debug{
     def print(op : String, text : String, cursor : Int) : Unit = {
@@ -11,9 +12,9 @@ trait Debug{
 trait UndoRedo{
     var history = new ListBuffer[(Int,StringBuilder)]
     var position : Int = 0
-    protected def u : Unit
-    protected def ctrlr : Unit
-    protected def add : Unit
+    def u : Unit
+    def ctrlr : Unit
+    def add : Unit
 }
 
 class Editor(private var str : String) extends Debug with UndoRedo{
@@ -26,16 +27,25 @@ class Editor(private var str : String) extends Debug with UndoRedo{
     override def toString = {
         line.toString + " " + cursor_position.toString
     }
-    protected def add : Unit = {
-        if(position != 0) history.drop(position)
+    def add : Unit = {
+        if(position != 0) {
 
-        (cursor_position,line) +=: history
+            //println(position.toString +" prima "+history.length)
+            history = history.drop(position+1)
+            position = 0
+            //println(position.toString +" dopo "+history.length)
+        }
+
+        (cursor_position,new StringBuilder(line.toString)) +=: history
+        println("added to history")
     }
     
-    protected override def u : Unit = {
+    override def u : Unit = {
         if(history.isEmpty) return
 
-        if(position < history.length - 1  && position > 0){
+        println(position.toString + " " + history.length)
+
+        if(position <= history.length && position >= 0){            
             position += 1
             val data = history(position)
             line = data._2
@@ -45,10 +55,12 @@ class Editor(private var str : String) extends Debug with UndoRedo{
         }
     }
 
-    protected override def ctrlr : Unit ={
+    override def ctrlr : Unit ={
         if(history.isEmpty) return
 
-        if(position < history.length && position > 0){
+        println(position.toString + " " + history.length)
+
+        if(position <= history.length && position > 0){
             position -= 1
             val data = history(position)
             line = data._2
@@ -80,13 +92,12 @@ class Editor(private var str : String) extends Debug with UndoRedo{
     def dw = {
         val next_space = line.indexOf(" ", cursor_position)
         println("next space "+next_space)
-        if(next_space < line.length ){
+        if(next_space >= 0 ){
             line.delete(cursor_position - 1, next_space)
-            cursor_position = next_space
+            
         }else{
-            line.delete(cursor_position, line.length -1)
-            if(check(cursor_position - 1)) cursor_position -=1
-            else cursor_position = 0
+            line.delete(cursor_position, line.length)
+            cursor_position = line.length
         }
         add
         print("dw",line.toString,cursor_position)
@@ -95,13 +106,16 @@ class Editor(private var str : String) extends Debug with UndoRedo{
     /*  i which adds a character c after the character 
         under the cursor and moves the cursor under c
     */
-    def i(c : Char) = {        
+    def i(c : Char) = {
+    /*        
         if(check(cursor_position + 1)){
             line.insert(cursor_position,c)
         }else{
             line.append(c)
             cursor_position = line.length
-        }
+        }*/
+        line.insert(cursor_position,c)
+        cursor_position += 1
         add
         print("i",line.toString,cursor_position)
         
@@ -112,12 +126,9 @@ class Editor(private var str : String) extends Debug with UndoRedo{
         and moves the cursor under the blank space;
     */
     def iw(s : String) = {
-        if(check(cursor_position + 1)){
-                line.insert(cursor_position+1,s + " ")
-        }else{
-            line.append(s + " ")
-            cursor_position = line.length - 1
-        }
+
+        line.insert(cursor_position,s + " ")
+        cursor_position += s.length + 1
         add
         print("iw",line.toString,cursor_position)
     }
@@ -128,6 +139,7 @@ class Editor(private var str : String) extends Debug with UndoRedo{
     */
     def l(n : Int = 1) : Unit = {
         if(!check(cursor_position + n)) return
+        
         cursor_position += n
         add
         print("l",line.toString,cursor_position)
@@ -148,9 +160,10 @@ class Editor(private var str : String) extends Debug with UndoRedo{
     /*  RI : cursor position integrity check
     */
     def check(n : Int) : Boolean = {
-        println(s"${line.length} : $cursor_position")
+        println(s"${line.length} : $n")
         if(line.isEmpty) false
-        if(line.length <= n) false
+        if(n<0) false
+        if(line.length < n) false
         else true
     }
 
@@ -159,11 +172,16 @@ class Editor(private var str : String) extends Debug with UndoRedo{
 
 object es8 {
     def main : Unit = {
-        val e = new Editor("ciao mondo come va")
+        val e = new Editor("4321")
         println(e)
-        e.i('z')
-        e.h(10)
-        e.dw
+        e.h()
+        e.h()
+        e.h()
+        e.u
+        e.u
+        e.ctrlr
+        e.l(2)
+        e.u
     }
 }
 
