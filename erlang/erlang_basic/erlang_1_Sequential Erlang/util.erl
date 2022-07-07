@@ -51,7 +51,7 @@ next(M,M) -> true;
 next(M,N) ->
     case M rem N of
         0 -> false;
-        _ -> inext(M,N+1)
+        _ -> next(M,N+1)
 end.
 
 is_proper(N) ->  

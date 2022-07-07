@@ -32,6 +32,9 @@ _opam/
 ### Scala ###
 *.class
 *.log
+project/
+target/
+
 
 ### Erlang ###
 .eunit
@@ -40,6 +43,7 @@ _opam/
 *.plt
 erl_crash.dump
 .concrete/DEV_MODE
+.metals/
 
 # rebar 2.x
 .rebar
