@@ -21,6 +21,4 @@ let merge l1 l2 =
 		|	((h1::t1),(h2::t2)) -> if fst h1 < fst h2 then merge t1 l2 (h1::output) else merge l1 t2 (h2::output)
 in merge l1 l2 [];;
 
-
-print_string "ciao\n\n";;
 merge (List.sort comp alkaline_earth_metals) (List.sort comp noble_gases);;
