@@ -1,68 +1,67 @@
 module type MonoidADT = sig
   type t
   val set : t list
-  (**Indentity *)
-  val i : t
-  val op : t -> t -> t 
+  val op_1 : t -> t -> t
+  val identity_1 : t
 end
-module Monoid (M:MonoidADT) = struct  
-  let i = M.i
-  let op = M.op
+
+module Monoid(M: MonoidADT) = struct
   let set = M.set
-  let rec test_identity = function
-    | [] -> true
-    | h::t -> if op h i = h then test_identity t else false
-  let rec test_associativity = function
-    | [] -> true
-    | h1::t1 -> let rec loop1 = function
-      | [] -> true
-      | h2::t2 -> let rec loop2 = function 
-        | [] -> true
-        | h3::t3 -> if op h1 (op h2 h3) = op (op h1 h2) h3 then loop2 t3 else false 
+  let identity_1 = M.identity_1
+  let op_1 = M.op_1
 
-    in if loop2 set then loop1 t2 else false 
-    in if loop1 set then test_associativity t1 else false  
-  let is_it_monoid =    
-    if test_associativity set && test_identity set then true else false
+  let rec is_associative = function
+    | [] -> true
+    | a::t -> let rec loop1 = function
+      | [] -> is_associative t
+      | b::t1 -> if (op_1 a b) == (op_1 b a) then loop1 t1 else false
+    in loop1 set
+  
+  let rec identity_check op identity= function
+    | [] -> true
+    | h::t -> if (op h identity) <> h then false else identity_check op identity t
+  let rec is_monoid = is_associative set && identity_check op_1 identity_1 set
+
 end
 
-module Group (G:MonoidADT) = struct
+module type GroupADT = sig
+  include MonoidADT
+end
+
+module Group (G:GroupADT) = struct
   include Monoid(G)
-  let rec test_inverce = function
+  let rec inverse_check = function
     | [] -> true
-    | h1::t1 -> let rec loop1 = function
-      | [] -> true
-      | h2::t2 -> if op h1 h2 = i then loop1 t2 else false
-      in if loop1 set then test_inverce t1 else false
-  let is_it_group = 
-    if test_inverce set && test_associativity set && test_identity set then true else false
+    | a::t -> let rec loop1 = function
+      | [] -> inverse_check t
+      | b::t1 -> if op_1 a b <> identity_1 then false else loop1 t1
+    in loop1 set
+  let is_group = inverse_check set && is_monoid
 end
 
 module type RingADT = sig
-  type t
-  val set : t list
-  (**Indentity *)
-  val i : t
-  (**Indentity for second operator *)
-  val i_2 : t
-  val op : t -> t -> t 
-  val op_2 : t -> t -> t 
+  include GroupADT
+  val op_2 : t -> t -> t
+  val identity_2 : t
 end
 
 module Ring (R:RingADT) = struct
-  include Group(R) 
+  include Group(R)
 
-  module TestADT = struct
+  let op_2 = R.op_2
+  let identity_2 = R.identity_2
+
+  module TempADT = struct
     type t = R.t
-    let i = R.i_2
     let set = R.set
-    let op = R.op_2
+    let identity_1 = R.identity_2
+    let op_1 = R.op_2
   end
 
-  module Test = Monoid(TestADT)
+  module Monoid_2 = Monoid(TempADT)
 
-  let is_it_ring = 
-    if is_it_group && Test.is_it_monoid then true else false
+  let is_ring = is_group && Monoid_2.is_monoid
+
 end
 
 module Bool = struct
@@ -94,9 +93,3 @@ module Z4 = struct
 
   let op_2 a b = a*b mod 4
 end
-
-module P = Ring(Z4)
-
-let x = P.is_it_ring
-
-
