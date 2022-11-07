@@ -28,12 +28,12 @@ let table_of_temps = [Celsius;Fahrenheit;Kelvin;Rankine;Delisle;Newton;Reaumur;R
 (*Converts the given float to every scale of type temp and returns the results as a list*)
 let rec make_table input = function
   |	[] -> []
-	| h::t -> (convert h input) :: make_table input convert t;;
+	| h::t -> (convert h input) :: make_table input t;;
 
 let t = (Kelvin,0.);;
 
 (*Given the scale and value of tempeture returns a list of corrisponding tempetures in other scales*)
-let invert temp value = make_table (to_celsius temp value) convert table_of_temps;;
+let invert temp value = make_table (to_celsius temp value) table_of_temps;;
 
 invert (fst t) (snd t)
 

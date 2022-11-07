@@ -1,8 +1,8 @@
-open Str
+#load "str.cma";;
 
-let print_list = function
-  | [] -> "\n"
-  | (k,v)::t -> print_str (k^":"^(string_of_int v)^" "); print_list t
+let rec print_list = function
+  | [] -> print_string "\n"
+  | (k,v)::t -> print_string (k^":"^(string_of_int v)^" "); print_list t
 
 let rec remove s = function
   | [] -> []
