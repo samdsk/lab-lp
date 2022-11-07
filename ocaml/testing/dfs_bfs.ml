@@ -1,7 +1,4 @@
 open Graphs
-
-
-
 let arcs_to_graph arcs = 
   let rec arcs_to_graph g = function
     | (f,s) ::t -> (arcs_to_graph (Graphs.Graph.add_arc f s g) t)

@@ -1,50 +1,43 @@
 open IntervalI
+open Comparable
 
-module type Comparable = sig
-  type t
-  val compare : t -> t -> int
-  val tostring : t -> string
-end
-
-module Interval (C: Comparable) : (IntervalI with type endpoint = C.t ) = struct
-  
-  type endpoint = C.t
-  type interval = Empty | Interval of endpoint * endpoint
+module Interval (T : Comparable) : (IntervalI with type endpoint = T.t)  = struct
+  type endpoint = T.t
+  type interval = Interval of endpoint*endpoint | Empty
   exception WrongInterval
 
-  let create i f = 
-    if i>f then raise WrongInterval
-    else Interval(i,f)
-  let is_empty = function 
-    | Empty -> true
-    | _ -> false
-  let contains i e = match i with
-    | Empty -> raise WrongInterval
-    | Interval(i,f) -> if e >= i || e <= f then true else false
-  let intersect i1 i2 = match i1 with 
-    | Empty -> i2
-    | Interval(i,f) -> match i2 with
-      | Empty -> i1
-      | Interval(x,y) -> 
-        let min = if C.compare i x >= 0 then x else i in
-        let max = if C.compare f y >= 0 then f else y in
-        create min max
+  let create a b = 
+    if T.compare a b > 0 then raise WrongInterval 
+    else if T.compare a b == 0 then Empty else Interval(a,b)
+
+  let is_empty = function Empty -> true | _ -> false
+
+  let contains i e = match i with 
+    | Empty -> false
+    | Interval(a,b) -> T.compare e a >= 0 && T.compare e b <= 0
+  
+  let intersect i1 i2 = match i1,i2 with
+    | Empty,_ | _,Empty -> Empty
+    | Interval(a1,b1),Interval(a2,b2) -> 
+      let min a b = if T.compare a b <= 0 then a else b in
+      let max a b = if T.compare a b >= 0 then a else b in
+      create (max a1 a2) (min b1 b2) 
+
   let tostring = function
-    | Empty -> ""
-    | Interval(i,f) -> (C.tostring i)^" , "^(C.tostring f)
+    | Empty -> "[]"
+    | Interval(a,b) -> "["^T.tostring a^", "^T.tostring b^"]"
 end
 
-module Ints : (Comparable with type t=int) = struct
-  type t = int  
-  let compare a b =  if a >= b then 1 else -1
-  let tostring i = string_of_int i
-end
+module IntInterval = Interval(
+  struct 
+    type t = int
+    let compare = compare
+    let tostring = string_of_int
+end)
 
-module Strings : (Comparable with type t=string) = struct
-  type t = string  
-  let compare a b =  if a >= b then 1 else -1
-  let tostring i = i
-end
-
-module IntInterval = Interval(Ints)
-module StringInterval = Interval(Strings)
+module StringInterval = Interval(
+  struct
+    type t = string
+    let compare = String.compare
+    let tostring t = t
+end)

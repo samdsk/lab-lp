@@ -1,6 +1,6 @@
 module type IntervalI = sig
-  type endpoint  
-  type interval   
+  type interval
+  type endpoint
   val create : endpoint -> endpoint -> interval
   val is_empty : interval -> bool
   val contains : interval -> endpoint -> bool
