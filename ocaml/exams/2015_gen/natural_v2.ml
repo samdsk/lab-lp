@@ -17,17 +17,29 @@ module N = struct
       | Succ(s) -> build (acc+1) s
   in build 0 n
 
-  let rec ( + ) n = function
-    | Zero -> n
-    | Succ(s) -> ( + ) n s
-
   let rec ( - ) n m = 
     let rec build n' m'  = match n',m' with      
       | n'',Zero -> n''
       | Zero,_ -> raise NegativeNumber 
       | Succ(ns),Succ(ms) -> build ns ms
     in build n m
- 
+
+  let ( / ) n m = match m with 
+      | Zero -> raise DivisionByZero
+      | _ -> convert((eval n) / (eval m))
+
+  let div n m = match m with Zero -> raise DivisionByZero
+  | _ -> 
+    let rec build acc n' = function
+      | Zero -> Zero
+      | Succ(Zero) -> (convert acc)
+      | Succ(s) -> build (acc + 1)  (n'-m) m
+    in build 0 n m
+  
+  let rec ( + ) n = function
+    | Zero -> n
+    | Succ(s) -> ( + ) n s
+
   let ( * ) n m = match n with
     | Zero -> Zero
     | _ -> 
@@ -36,9 +48,5 @@ module N = struct
         | Succ(Succ(Zero)) -> n'
         | Succ(s) -> n' + (build n' s)
       in build n m
-
-  let ( / ) n m = match m with 
-      | Zero -> raise DivisionByZero
-      | _ -> convert((eval n) / (eval m))
 
 end
