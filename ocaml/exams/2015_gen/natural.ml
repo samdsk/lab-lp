@@ -1,30 +1,48 @@
 open NaturalI
 
-module N : NaturalI = struct
-
-  type natural = Natural of int
+module N = struct
+  type natural = Natural of succ and
+  succ = Succ of succ | Zero
 
   exception NegativeNumber
   exception DivisionByZero
 
-  let ( + ) a b = match a,b with
-    | Natural(x),Natural(y) -> Natural(x+y)
+  (**another way this function wrap m with type succ n times*)
+  let add n m = match n with
+    | Natural(Zero) -> m
+    | Natural(Succ(_) as s) -> match m with 
+      | Natural(Zero) -> n
+      | Natural(Succ(_) as t) -> 
+        let rec build sxx = function
+          | Zero -> sxx
+          | Succ(sx) -> build (Succ(sxx)) sx
+        in Natural(build t s)
 
-  let ( - ) a b = match a,b with
-    | Natural(x),Natural(y) when(y>x) -> raise NegativeNumber 
-    | Natural(x),Natural(y) -> Natural(x-y)
+  let eval = function
+    | Natural(Zero) -> 0
+    | Natural(Succ(_) as x) -> 
+      let rec build acc = function
+      | Zero -> acc
+      | Succ(s) -> build (acc+1) s
+    in build 0 x
+      
+  let convert num = 
+    let rec build = function
+    | 0 -> Zero
+    | n when n<0 -> raise NegativeNumber
+    | n -> Succ(build (n-1))
+  in Natural(build num)
 
-  let ( * ) a b = match a,b with
-    | Natural(x),Natural(y) -> Natural(x*y)
+  let ( + ) n m = convert((eval n) + (eval m))
 
-  let ( / ) a b = match a,b with
-    | _,Natural(y) when (y=0) -> raise DivisionByZero
-    | Natural(x),Natural(y) -> Natural(x/y)
+  let ( - ) n m = convert((eval n) - (eval m))
 
-  let eval n = match n with Natural(a) -> a
+  let ( * ) n m = convert((eval n) * (eval m))
 
-  let convert n = match n with
-    | _ when(n>=0) -> Natural(n)
-    | _ -> let f = float_of_int n in Natural(int_of_float (Float.sqrt (f *. f)))
+  let ( / ) n m = match m with 
+    | Natural(Zero) -> raise DivisionByZero
+    | _ -> convert((eval n) / (eval m))
+
+
 
 end
