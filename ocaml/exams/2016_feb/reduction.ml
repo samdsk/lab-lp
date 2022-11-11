@@ -21,13 +21,13 @@ module ArithExpr = struct
     let rec reduce = function
       | Add(x,y) -> begin match x,y with
         | Value(a),Value(b) -> Value(a+.b)
-        | Value(_) as c, t | t,(Value(_) as c) -> Add(c , reduce t)
+        | Value(_) as c, t | t,(Value(_) as c) -> Add(reduce t,c)
         | t, s -> Add(reduce t,reduce s) end
 
       | Sub(x,y) -> begin match x,y with
         | Value(a),Value(b) -> Value(-.a+.b)
-        | Value(_) as c , t | t,(Value(_) as c) -> Sub(c,reduce t)
-        | t, s  -> Sub(reduce t,reduce s) end
+        | Value(_) as c , t | t,(Value(_) as c) -> Sub(reduce t,c)
+        | t, s  -> Sub(reduce s,reduce t) end
 
       | Mul(x,y) -> begin match x,y with
         | Value(a),Value(b) -> Value(a*.b)
@@ -35,8 +35,8 @@ module ArithExpr = struct
         | t, s  -> Mul(reduce t,reduce s) end
 
       | Div(x,y) -> begin match x,y with
-        | Value(a),Value(b) -> Value(a/.b)
-        | Value(_) as c , t | t, (Value(_) as c) -> Div(c,reduce t)
+        | Value(a),Value(b) -> Value(b/.a)
+        | Value(_) as c , t | t, (Value(_) as c) -> Div(reduce t,c)
         | t, s  -> Div(reduce t,reduce s) end
 
       | c -> c ;;
