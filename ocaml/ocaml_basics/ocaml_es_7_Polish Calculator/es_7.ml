@@ -13,7 +13,7 @@ module PolishCalculator = struct
         | "/"  -> Stack.push (Div(Stack.pop stack, Stack.pop stack)) stack
         | "+"  -> Stack.push (Add(Stack.pop stack, Stack.pop stack)) stack
         | "-"  -> Stack.push (Sub(Stack.pop stack, Stack.pop stack)) stack
-        | n -> try Stack.push (Val(int_of_string n)) stack with | Failure(_) -> raise InvalidPolishNotation
+        | n -> try Stack.push (Val(int_of_string n)) stack with Failure(_) -> raise InvalidPolishNotation
       in let l = Str.split (Str.regexp " +") str
           in if (List.length l) < 3 
             then raise InvalidPolishNotation 
