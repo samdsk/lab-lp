@@ -31,7 +31,7 @@ module ArithExpr = struct
 
       | Mul(x,y) -> begin match x,y with
         | Value(a),Value(b) -> Value(a*.b)
-        | Value(_) as c ,t | t,(Value(_) as c) -> Mul(c,reduce t)
+        | Value(_) as c ,t | t,(Value(_) as c) -> Mul(reduce t,c)
         | t, s  -> Mul(reduce t,reduce s) end
 
       | Div(x,y) -> begin match x,y with
