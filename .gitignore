@@ -62,3 +62,6 @@ _checkouts/
 
 main
 
+#env
+desktop.ini
+.DS_Store
