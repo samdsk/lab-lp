@@ -5,29 +5,30 @@ let trialdivision n =
     | d -> check x (if d=2 then 3 else (d+2))
 in  check n 2
 
-let lucaslehmer m =   
-  let rec s_i s_i_1 i = function
-    | n when n = i -> if (int_of_float((s_i_1 ** 2.) -. 2.) mod m) = 0 then true else false
-    | n -> s_i log( float m +. 1. )
-in s_i 4. (n-2) 0
+let lucaslehmer m =
+  let rec s_i s_i_1 = function
+    | 0 -> s_i_1 = 0.
+    | p -> s_i ((s_i_1 ** 2.) -. 1.) (p-1) in s_i 4. (int_of_float((log (float m +. 1.)) /. (log 2.) -. 2.))
+
+let range ~start:i ~finish:e ~step:step =
+  let rec range s f acc = match f with
+      | f when f=s -> acc
+      | _ -> range (s+step) f (s+step::acc)
+in range i e []
+
+let mod_resolve a e m = 
+  let rec find b = function
+    | l when l==e -> b
+    | l -> find (b*a mod m) (l+1)
+in find 1 0
 
 let littlefermat n = 
-  let p = float_of_int n in
-  let rec gen_random () = let r = Random.float 0.99 *. p in if r <> 0. then r else gen_random () in
-  let rec gen acc = function 
-    | 0 -> acc
-    | times -> if int_of_float(gen_random () ** (p -.1.)) mod (n-1) = 1 then gen (acc+1) (times-1) else gen acc (times-1) 
-  in(gen 0 100) > 70
+  let n_1 = n-1 in
+    let a = (range ~start:0 ~finish:(int_of_float (log (float n))) ~step:1) in
+    List.filter (fun x -> mod_resolve x (n_1) n <> 1) a |> List.length == 0
+       
 
 let is_prime = function
   | n when n<=10000 -> print_endline "trialdivision";trialdivision n
   | n when n<=524287 -> print_endline "lucas lehmer";lucaslehmer n
   | n -> print_endline "little fermat";littlefermat n
-
-
-let lucaslehmer m =
-  Printf.printf "Lucas-Lehmer's Primality Test\t" ;
-  let rec lucaslehmer p s m =
-  if p==0 then s==0
-  else lucaslehmer (p-1) ((s*s-2) mod m) m
-  in lucaslehmer ((int_of_float ((log ((float m)+.1.))/.(log 2.)))-2) 4 m ;;
