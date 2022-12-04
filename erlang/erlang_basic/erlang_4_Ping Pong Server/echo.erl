@@ -1,7 +1,10 @@
 -module(echo).
 -export([start/0,print/1,stop/0]).
 
-start() -> Pid = spawn(echo,loop,[]),register(echo_server,Pid), Pid.
+start() -> 
+    Pid = spawn(echo,loop,[]),
+    register(echo_server,Pid), 
+    Pid.
 
 print(Term) -> 
     io:format("Term: ~p~n",[Term]), 
@@ -12,8 +15,6 @@ print(Term) ->
     end. 
 
 stop() -> echo_server ! stop, ok.
-
-
 
 loop() ->
     receive 
