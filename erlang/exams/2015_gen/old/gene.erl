@@ -8,6 +8,7 @@ start(N,Limit,1) ->
         Max = trunc(math:pow(Limit,N)),
         L = loop(1,1,0,Times,List,Max,Limit), io:format("Proc:1 ~p\n",[L]), server ! {res,1,lists:reverse(L)}
 end;
+
 start(N,Limit,Pos) ->
     io:format("Spawned ~p:~p\n",[Pos,self()]),
     receive
