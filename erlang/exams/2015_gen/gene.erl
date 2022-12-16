@@ -1,40 +1,42 @@
 -module(gene).
--export([start/3]).
-start(N,Limit,1) ->
-    io:format("Spawned 1:~p\n",[self()]),
+-export([start/3,test/3]).
+
+start(Pos,N,M) -> %  Limit is the M
+    %io:format("Worker:~p, Pos:~p, N:~p, Limit: ~p\n",[self(),Pos,N,M]),
     receive
-    {p,List} -> 
-        Times = trunc(math:pow(Limit, N-1)),
-        Max = trunc(math:pow(Limit,N)),
-        L = loop(1,1,0,Times,List,Max,Limit), io:format("Proc:1 ~p\n",[L]), server ! {res,1,lists:reverse(L)}
-end;
-start(N,Limit,Pos) ->
-    io:format("Spawned ~p:~p\n",[Pos,self()]),
-    receive
-    {p,List} ->         
-        Times = trunc(math:pow(Limit, N-Pos)),
-        io:format("Proc:~p List: ~p Times: ~p \n",[Pos,List,Times]),
-        %Max = trunc(math:pow(Limit,N)),
-        L = loop(1,0,Times,List,Limit), 
-        io:format("~p\n",[L]), server ! {res,Pos,L}
+        {gen,Pid} -> 
+            %io:format("Worker:~p, Pos:~p, received order\n",[self(),Pos]),
+            StepSize = trunc(math:pow(M,Pos)),
+            Max = trunc(math:pow(M,N)),
+            Pid ! {res,Pos,gen(StepSize,1,1,M,[],1,Max)}
 end.
 
+% gen(Step,Times,Limit,Acc,Max) Max = M^N 
+% gen(1,2,1,1,3,) -> gen(1,2,1+1,1,3)
+% gen(1,2,2,1,3) -> gen(1,2,1,1+1,3)
+% gen(1,2,1,2,3) -> gen(1,2,1+1,2,3)
+% gen(1,2,2,2,3) -> gen(1,2,1,2+1,3)
+% gen(1,2,1,3,3) -> gen(1,2,1+1,3,3)
+% gen(1,2,2,3,3) -> gen(1,2,1,1,3)
 
-loop(1,_,_,_,L,0,_) -> io:format("finished proc1 loop\n"),L;
-loop(1,Num,Times,Times,L,Limit,M) -> 
-    io:format("Time=Time, Num: ~p ",[Num]),
-    if 
-        Num>M -> io:format("Not incrementing Num\n"),loop(1,1,0,Times,L,Limit,M);
-        Num=<M -> io:format("Incrementing Num\n"), loop(1,Num+1,0,Times,L,Limit,M) 
-    end;
-loop(1,Num,T,Times,L,Limit,M) -> io:format("T:~p Time:~p Limit:~p\n",[T,Times,Limit]),loop(1,Num,T+1,Times,[[Num]|L],Limit-1,M).
+test(N,M,P) ->
+    gen(trunc(math:pow(M,P)),1,1,M,[],1,trunc(math:pow(M,N))).
 
-loop(_,_,_,[],_) -> io:format("finished proc loop\n"), [];
-loop(Num,Times,Times,L,M) -> 
-    io:format("Time=Time, Num: ~p ",[Num]),
-    if 
-        Num>=M -> io:format("Resetting Num\n"), loop(1,0,Times,L,M);
-        Num<M -> io:format("Incrementing Num\n"), loop(Num+1,0,Times,L,M)
-        
-    end;
-loop(Num,T,Times,[H|List],M) -> io:format("T:~p Time:~p Limit:~p\n",[H,Times,M]), [H++[Num]  | loop(Num,T+1,Times,List,M)].
+
+% outside loop exit
+gen(_Step,_Times,_Num,_Limit,Acc,Tot,Max) when (Tot > Max) ->
+    lists:reverse(Acc);
+% outside loop, repeating inside loop
+gen(Step,Times,Num,Limit,Acc,Tot,Max) when (Step =:= Times) and (Num =:= Limit) ->
+    %io:format("Gen-> (Step == Times and Num == Limit) Step:~p, Num:~p, Acc:~p, Tot:~p\n",[Step,Num,Acc,Tot]),
+    gen(Step,1,1,Limit,[Num]++Acc,Tot+1,Max);
+
+% increasing Number
+gen(Step,Times,Num,Limit,Acc,Tot,Max) when (Step =:= Times) ->
+    %io:format("Gen-> (Step == Times) Times:~p, Num:~p, Acc:~p, Tot:~p\n",[Times,Num,Acc,Tot]),
+    gen(Step,1,Num+1,Limit,[Num]++Acc,Tot+1,Max);
+% increasing inside loop Times
+gen(Step,Times,Num,Limit,Acc,Tot,Max) -> 
+    %io:format("Gen-> Step:~p, Times:~p, Num:~p, Acc:~p, Tot:~p\n",[Step,Times,Num,Acc,Tot]),
+    gen(Step,Times+1,Num,Limit,[Num]++Acc,Tot+1,Max).
+
