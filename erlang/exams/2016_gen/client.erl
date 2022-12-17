@@ -1,21 +1,26 @@
 -module(client).
--export([convert/5,test/0,test1/0]).
+-export([convert/5,test/0]).
+
+
+convert(from,X,to,Y,Temp) -> 
+    X ! {self(),{from,X,to,Y,Temp}},
+    receive
+        {res,Result} ->
+            io:format("~p°~s are equivalent to ~p°~s\n",[Temp,X,Result,Y]);
+        Any ->
+            io:format("Client received: ~p\n",[Any])
+after 3000 -> exit(normal)
+end.
 
 test() ->
-    tempsys:startsys(),
-    convert(from, 'Re', to, 'De', 25).
-test1() ->
-    U = fun(X) -> unregister(X) end,
-    Temps = ['C','F','K','R','De','N','Re','Ro'],
-    lists:map(U,Temps),
-    tempsys:startsys(),
-    convert(from, 'Re', to, 'De', 25).
-convert(from,A,to,B,Temp) ->
-    spawn(fun()-> rpc(self(),{from,A,to,B,Temp}) end).
+    Conv2 = fun(X) -> client:convert(from, 'C', to, X, 32) end,
+    lists:map(Conv2, ['C','De', 'F', 'K', 'N', 'R', 'Re', 'Ro']).
 
-rpc(Pid,{from,A,to,B,Temp} = Msg) ->
-    A ! {Pid,Msg},
-    receive 
-        {res,Res} -> io:format("~p°~s are equivalent to ~p°~s\n",[Temp,A,Res,B]);
-        Any -> io:format("Error: client: ~p\n",[Any])
+rpc(X,Msg) ->
+    X ! {self(),Msg},
+    receive
+        Any ->
+            io:format("Client received: ~p\n",[Any])
+after 3000 -> exit(normal)
 end.
+
