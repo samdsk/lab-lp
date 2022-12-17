@@ -26,11 +26,11 @@ after 10000 ->
 end.
 
 stop() ->
-    try
-        [unregister(X) || X <- ?Temps] 
+    [try
+        unregister(X) 
     catch
-         Any:E -> io:format("~p---~p\n",[Any,E])
-    end.
+         Any:E -> io:format("~p#~p---~p\n",[X,Any,E])
+    end || X <- ?Temps].
 
 convert(T,Temp) ->
     case T of
