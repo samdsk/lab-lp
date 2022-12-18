@@ -1,22 +1,36 @@
 -module(tempsys).
--export([startsys/0]).
+-export([startsys/0,stop/0]).
+-define(Temps,['C','De', 'F', 'K', 'N', 'R', 'Re', 'Ro']).
 
+startsys() -> 
+    [{X,spawn(fun ()-> register(X,self()),temp(X) end)}||X <- ?Temps].
 
-startsys() ->
-    Temps = ['C','F','K','R','De','N','Re','Ro'],
-    Init = fun(T) -> Pid = spawn(fun()-> register(T,self()),temp(T) end), {T,Pid} end,
-    Pids = lists:map(Init,Temps),
-    Map = maps:from_list(Pids),
-    io:format("Services created: ~p\n",[Map]).
-
-temp(T) ->
-    io:format("Temp: ~p:~p\n",[T,self()]),
+temp(Who)->
+    %io:format("Temp actor ~p ready\n",[Who]),
     receive
-        {Who,{from,A,to,B,Temp}} when (A=:=B)=:=T -> Who ! {res,Temp},temp(T);
-        {Who,{from,_,to,B,Temp}} when T=:=B -> Who ! {res,convert(B,Temp)} ,temp(T);
-        {Who,{from,A,to,B,Temp}} -> B ! {Who,{from,A,to,B,convert_to_c(A, Temp)}},temp(T);
-        Any -> io:format("Error: ~p",[Any]),temp(T)    
+        {Pid,{from,X,to,Y,Value}} when Y =:= Who ->
+            %io:format("to same scale ~p:~p\n",[Who,Y]),
+            X ! {Pid,res,convert(Y,Value)},
+            temp(Who);
+        {Pid,{from,X,to,Y,Value}} ->
+            %io:format("Passing to next with value converted to C° ~p:~p\n",[Who,Y]),
+            Y ! {Pid,{from,X,to,Y,convert_to_c(Who, Value)}},
+            temp(Who);
+        {Pid,res,Value} ->
+            %io:format("Recevied result to ~p redirecting to client : ~p\n",[Who,Value]),
+            Pid ! {res,Value},
+            temp(Who)
+after 10000 -> 
+    stop(),
+    exit(normal)
 end.
+
+stop() ->
+    [try
+        unregister(X) 
+    catch
+         Any:E -> io:format("~p#~p---~p\n",[X,Any,E])
+    end || X <- ?Temps].
 
 convert(T,Temp) ->
     case T of
@@ -41,5 +55,4 @@ convert_to_c(T,Temp) ->
         'Re'  -> Temp * (5/4);
         'Ro'  -> (Temp - 7.5) * (40/21)
 end.
-
 
