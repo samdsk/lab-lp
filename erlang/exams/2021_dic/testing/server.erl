@@ -1,12 +1,20 @@
 -module(server).
 -compile(export_all).
+-define(Shell,user).
+-define(MM1,client:node_make("mm1")).
+-define(MM2,client:node_make("mm2")).
 
 start() ->
-    io:format(user,"Server ready!\n",[]),
-    listen().
+    register(server,self()),
+    io:format(?Shell,"Server ready!\n",[]),
+    loop().
 
-listen() ->
+loop() ->
     receive
-        Any -> io:format("Server: ~p\n",[Any]),
-        listen()
+        {MM,{reverse,N,H}} = M -> 
+            io:format(?Shell,"Server: ~p > ~p\n",[MM,M]),
+            loop();
+        Any -> 
+            io:format(?Shell,"Server: ~p\n",[Any]),
+            loop()
 end.
