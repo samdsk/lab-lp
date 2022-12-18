@@ -1,12 +1,17 @@
 -module(test).
 -export([start/0,rpc/1,ping/0]).
+-define(Shell,global:whereis_name(shell)).
+
+to_node(Str) ->
+    {_,Host} = net:gethostname(),
+    list_to_atom(Str++[$@]++Host).
 
 start() ->
     %global:register_name(server, spawn('mm1@DsStudios',fun () -> loop() end)).
-    spawn('mm1@DsStudios',fun () -> register(server,self()), loop() end).
+    spawn(to_node("mm1"),fun () -> register(server,self()), loop() end).
 
 ping() -> 
-    net_adm:ping('mm1@DsStudios').
+    net_adm:ping(to_node("mm1")).
 
 loop() ->
     io:format(user,"Server ready!\n",[]),
@@ -19,7 +24,7 @@ loop() ->
 end.
 
 rpc(Msg) ->
-    {server,'mm1@DsStudios'} ! {self(),Msg},
+    {server,to_node("mm1")} ! {self(),Msg},
     receive
         Any -> io:format(user,"Rpc: ~p\n",[Any])
 end.
