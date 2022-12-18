@@ -14,17 +14,17 @@ ping() ->
     net_adm:ping(to_node("mm1")).
 
 loop() ->
-    io:format(user,"Server ready!\n",[]),
+    io:format(global:whereis_name(shell),"Server ready!\n",[]),
     receive
         {Pid,Msg} -> 
-            io:format(user,"Server: ~p : ~p\n",[Pid,Msg]),
+            io:format(global:whereis_name(shell),"Server: ~p : ~p\n",[Pid,Msg]),
             Pid ! pong,
             loop();
-        Any -> io:format(user,"Some msg: ~p\n",[Any]), loop()
+        Any -> io:format(global:whereis_name(shell),"Some msg: ~p\n",[Any]), loop()
 end.
 
 rpc(Msg) ->
     {server,to_node("mm1")} ! {self(),Msg},
     receive
-        Any -> io:format(user,"Rpc: ~p\n",[Any])
+        Any -> io:format(global:whereis_name(shell),"Rpc: ~p\n",[Any])
 end.
