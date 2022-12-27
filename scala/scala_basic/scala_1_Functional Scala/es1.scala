@@ -50,14 +50,14 @@ object es1{
 
     def factors(num : Int) : List[Int] = {
 
-       def factors(div : Int, num : Int, limit:Int, lst : List[Int]) : List[Int]= {
+       def factors(div : Int, num : Int, limit:Int, lst : List[Int]) : List[Int] = 
 
             num%div match {
                 case _ if div > limit => if (lst.isEmpty) num::lst else lst
-                case 0 => factors(div,num/div,limit,div::lst)                            
+                case 0 => factors(div,num/div,limit,div::lst)
                 case _ => factors(div+1,num,limit,lst)
             }
-       }
+       
 
        factors(2,num,num/2,Nil)
     }
