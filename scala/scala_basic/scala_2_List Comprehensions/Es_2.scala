@@ -1,15 +1,16 @@
 object Es_2 {
-    def squared_numbers = (input:List[Any]) => {
+    def squared_numbers (input:List[Any]):List[Any] = {
         (for(x <- input) yield x match{
+            case i:Int => i*i
             case d:Double => d*d
             case l:List[Any] => squared_numbers(l)
-            case t:Product => toTuple(squared_numbers(t.productIterator.toList),t.getClass.getName())
-            case _ => Nothing
-        }).filter( _ == Nothing)
+            case t:Product => toTuple(squared_numbers(t.productIterator.toList))
+            case _ => Nil
+        }).filterNot( _ == Nil)
     }
     /*Creates a tuple class of given name at runtime*/
-    def toTuple(list:List[Any],name:String) : Product = {
-        Class.forName(name).getConstructors.apply(0).newInstance(list:_*).asInstanceOf[Product]
+    def toTuple(list:List[Any]) : Product = {        
+        Class.forName("scala.Tuple"+list.size).getConstructors.apply(0).newInstance(list:_*).asInstanceOf[Product]
     }
 
     def intersect : (List[Any],List[Any]) => List[Any] = (l1:List[Any],l2:List[Any]) => {
