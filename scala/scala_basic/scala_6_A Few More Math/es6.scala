@@ -9,7 +9,6 @@ object es6 {
         }).head
     }
 
-
     def primes(n : Int) : List[Int] = {
         2 :: (LazyList.iterate(3)(_ + 2)
         .takeWhile(_ < n)
