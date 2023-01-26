@@ -62,8 +62,9 @@ object LogLangEval{
                     case parser.Success(s,_) =>
                         s.foreach {
                             _ match {
-                                case p.~(s1,l) => {
-                                    println()
+                                case parser.~(s1,l) => {
+                                    println("Task "+s1);
+                                    l.zipWithIndex.foreach({case (e,i) => println("  [op"+(i+1)+"] "+e)})
                                 }
                             }
                         }
