@@ -2,7 +2,7 @@ trait Monoid[T] {
     val set : Set[T]
     val identity : T
     def op(a : T, b : T) : T
-
+    //wrong
     def is_associative(l : List[T]) : Boolean = l match {
         case List(a,b,c) => if ( op(op(a,b), c) == op(a, op(b,c))) is_associative(l.tail) 
             else false

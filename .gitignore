@@ -32,6 +32,7 @@ _opam/
 ### Scala ###
 *.class
 *.log
+*.logs
 project/
 target/
 
