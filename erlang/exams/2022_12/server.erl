@@ -13,7 +13,7 @@ listen(L1,L2,Len) ->
         {mm1,{reverse,Msg,Size}} when Size == Len -> 
             L = [Msg|L1],io:format("Len:~p ",[Len]),
             io:format("mm1 "),
-            print(lists:reverse(L)++tl(collect_mm2(L2,Len))),
+            print(lists:reverse(tl(collect_mm2(L2,Len)))++L),
             listen([],[],1);
         
         {mm1,{reverse,Msg,_Size}} -> L = [Msg|L1],io:format("Len:~p ",[Len]),print(mm1,L),listen(L,collect_mm2(L2,Len+1),Len+1);
