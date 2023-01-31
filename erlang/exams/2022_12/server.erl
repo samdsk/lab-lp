@@ -12,7 +12,7 @@ start() ->
 listen(L1,L2,Len) ->
     receive        
         {mm1,{reverse,Msg,Size}} when Size == Len -> 
-            L = [Msg|L1],io:format("Finaly capture Len:~p ",[Len]),
+            L = [Msg|L1],io:format("Final capture Len:~p ",[Len]),
             io:format("mm1 "),
             case Len rem 2 of
                 0 -> print(lists:reverse(collect_mm2(L2,Len))++L);
