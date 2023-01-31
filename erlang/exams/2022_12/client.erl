@@ -9,15 +9,6 @@ to_node(Str) ->
     {_,Host} = net:gethostname(),
     list_to_atom(Str++[$@]++Host).
 
-
-unregister() ->
-    try [unregister(X) || X <- ["mm1","mm2","server"]]
-            
-    catch
-        Any -> io:format("~p\n",[Any])
-            
-    end.
-
 start() ->    
     ping(),
     c:nl(client),
@@ -48,7 +39,7 @@ reverse(Str) ->
 listen() ->
     receive 
         Any -> io:format(Any), listen()
-    after 5000 -> exit(normal)
+    after 2000 -> exit(normal)
 end.
 
 enumerate(L) -> 

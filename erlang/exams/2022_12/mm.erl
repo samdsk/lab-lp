@@ -2,13 +2,6 @@
 %-compile(export_all).
 -export([start/1]).
 
-unregister() ->
-    try unregister(mm)
-            
-    catch
-        _:_-> io:format("Error unregister\n")
-            
-    end.
 start(MM) ->    
     group_leader(whereis(user), self()),
     register(mm,self()),
