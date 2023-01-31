@@ -19,24 +19,38 @@ start(N,M) ->
 
 build(Workers) ->
     [H ! {gen,[]} || H <- Workers],
-    print(combine(collect([],length(Workers)),[])).
+    print(collect(1,length(Workers),[])),
+    unregister(server).
 
 
-collect(Acc,Len) when length(Acc) == Len -> 
-    unregister(server),
-    {_,L}=lists:unzip(lists:sort(fun ({X,_},
-    {Y,_})-> X<Y end,Acc)),lists:reverse(L);
-collect(Acc,Len) -> 
+collect(P,M,Output) when P>M -> Output;
+collect(Pos,PosMax,Output) ->
     receive
-        {res,Pos,Res} -> 
-        %io:format("List received from ~p - ~p\n",[Pos,Res]),
-        collect([{Pos,Res}|Acc],Len)
+        {res,P,Res} when P == Pos ->
+            io:format("Pos: ~p Res: ~p\n",[Pos,Res]),
+            collect(Pos+1,PosMax,combine(Output,Res,[]))            
 end.
 
-combine([[]|_],Acc) -> lists:reverse(Acc);
-combine(L,Acc) ->
-    %io:format("combine: ~p\n",[lists:map(fun ([_|T]) -> T end, L)]),
-    combine(lists:map(fun ([_|T]) -> T end, L),[lists:map(fun ([H|_]) -> H end, L)| Acc]).
+combine([],[],Acc) -> lists:reverse(Acc);
+combine([],Res,_) -> lists:map(fun (H) -> [H] end,Res);
+combine([O|Output],[R|Res],Acc) ->
+    combine(Output,Res,[[R]++O|Acc]).
+
+% collect(Acc,Len) when length(Acc) == Len -> 
+%     unregister(server),
+%     {_,L}=lists:unzip(lists:sort(fun ({X,_},
+%     {Y,_})-> X<Y end,Acc)),lists:reverse(L);
+% collect(Acc,Len) -> 
+%     receive
+%         {res,Pos,Res} -> 
+%         %io:format("List received from ~p - ~p\n",[Pos,Res]),
+%         collect([{Pos,Res}|Acc],Len)
+% end.
+
+% combine([[]|_],Acc) -> lists:reverse(Acc);
+% combine(L,Acc) ->
+%     %io:format("combine: ~p\n",[lists:map(fun ([_|T]) -> T end, L)]),
+%     combine(lists:map(fun ([_|T]) -> T end, L),[lists:map(fun ([H|_]) -> H end, L)| Acc]).
 
 print([]) -> true;    
 print([H|T]) ->
