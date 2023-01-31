@@ -5,7 +5,7 @@ joseph(N,Step) ->
     process_flag(trap_exit,true),
     register(server,self()),
     Head = spawn_link(fun() -> hebrew:build(1,N,Step,self()) end),
-    io:format("Ina circle of ~p people, killing number ~p\n",[N,Step]),
+    io:format("In a circle of ~p people, killing number ~p\n",[N,Step]),
     receive after 2000 -> ok end,
     Head ! {1,Head,N},
     receive
