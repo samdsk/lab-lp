@@ -1,42 +1,62 @@
 -module(ring).
--export([start/0,send_m/1,send_m/2,stop/0,start/2]).
-start() ->
+-export([start/2,send_message/1,send_message/2,stop/0,test/0]).
+
+start(N,L) ->
+    register(head,spawn(fun () -> build_ring(N,L,self()) end)).
+
+build_ring(1,[H],Head) ->
+    %io:format("Last: ~p\n",[1]),    
+    listen(H, Head,last);
+
+build_ring(N,[H|T],Head) ->
+    %io:format("N: ~p\n",[N]),
+    Next = spawn_link(fun () -> build_ring(N-1, T, Head) end),
+    listen(H,Next).
+
+listen(Fun,Next,last) ->
+    %io:format("Next of last ~p is ~p\n",[self(),Next]),
+    receive
+        {stop} -> exit(normal);
+        {msg,N} -> 
+            io:format("~p\n",[Fun(N)]), 
+            listen(Fun, Next,last);
+        {msg,Msg,1} -> 
+            io:format("~p\n",[Fun(Msg)]),
+            listen(Fun, Next,last);
+        {msg,Msg,N} -> 
+            %io:format("last fun: ~p\n",[Fun(Msg)]),    
+            Next ! {msg,Fun(Msg),N-1},        
+            listen(Fun, Next,last)
+end.  
+
+listen(Fun,Next) ->
+    %io:format("Next of ~p is ~p\n",[self(),Next]),
+    receive
+        {stop} -> Next ! {stop}, exit(normal);
+        {msg,N} -> 
+            %io:format("~p\n",[Fun(N)]),    
+            Next ! {msg,Fun(N)},        
+            listen(Fun, Next);
+        {msg,Msg,N} -> 
+            %io:format("~p\n",[Fun(Msg)]),    
+            Next ! {msg,Fun(Msg),N},        
+            listen(Fun, Next)
+end.
+
+send_message(Msg) ->
+    head ! {msg,Msg}.
+
+send_message(Msg,N) ->
+    head ! {msg,Msg,N}.
+
+stop() -> head ! {stop}.
+
+test() ->
     L1 = [fun(X)-> X*N end||N<-lists:seq(1,7)],
-    start(7,L1).
+    L2 = [fun(X)-> X+1 end||N<-lists:seq(1,1000)],    
+    try unregister(head) catch _:_ -> io:format("Error\n") end,
+    %start(4, [fun(X)-> Y*X end || Y <- lists:seq(1,4)]),
+    %send_message(1, 2).
+    start(1000, L2).
+    %send_message(1, 10).
 
-start(_,L) ->  register(server,spawn(fun() -> 
-    process_flag(trap_exit, true),
-    First = spawn_link(fun() -> spawn_loop(1,L,self()) end),
-    listen(First)
-end)).
-
-send_m(N) -> server ! {job1,N}.
-send_m(N,T) -> server ! {jobt,N,T}.
-stop() -> server ! quit.
-listen(First) ->
-    receive
-        {job1,_} = Msg -> First ! Msg, listen(First);
-        {jobt,_,_} = Msg -> First ! Msg, listen(First);
-        {res,N} -> io:format("Result: ~p\n",[N]),listen(First);
-        quit -> First ! quit, unregister(server), exit(quitting)
-end.
-
-spawn_loop(_,[X],First) ->    
-    sub_proc_last(X, First);
-spawn_loop(I,[H|L],First) ->    
-    Next = spawn_link(fun() -> spawn_loop(I+1,L,First) end),
-    sub_proc(H,Next).
-
-sub_proc(X,Next) ->
-    receive
-        {job1,N} -> Next ! {job1,apply(X, [N])},sub_proc(X, Next);
-        {jobt,N,T} -> Next ! {jobt,apply(X, [N]),T},sub_proc(X, Next);
-        quit -> Next ! quit, exit(quitting)
-end.
-sub_proc_last(X,First) ->
-    receive
-        {job1,N} -> server ! {res,apply(X, [N])},sub_proc_last(X, First);
-        {jobt,N,1} -> server ! {res,apply(X, [N])},sub_proc_last(X, First);
-        {jobt,N,T} -> First ! {jobt,apply(X, [N]),T-1},sub_proc_last(X, First);        
-        quit -> exit(quitting)
-end.

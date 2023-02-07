@@ -1,36 +1,40 @@
 -module(tempsys).
--export([startsys/0,stop/0]).
--define(Temps,['C','De', 'F', 'K', 'N', 'R', 'Re', 'Ro']).
+-export([startsys/0]).
+-define(TEMPS,['C','F','K','R','De','N','Re','Ro']).
+
+%% This solution is WRONG!!!
+%% the correct one should have 2 sets of nodes one for converting from "From_Temp" to Celcius,
+%% another set to convert form Celcius to "To_Temp".
+%% the msg has to travel from client to to_celcius (which converts to celicius the given from_temp) 
+%% then to from_celcius (which converts from celcius to the given to_temp).
+%% finally the msg have to travel back to client from from_celcius node to to_celcius node then to client
+%% 
+%% msg -> client -> to_celcius -> from_celcius
+%% result -> from_celcius -> to_celcius -> client
 
 startsys() -> 
-    [{X,spawn(fun ()-> register(X,self()),temp(X) end)}||X <- ?Temps].
+    %try [unregister(X) || X <- ?TEMPS]
+    %    catch _ -> io:format("Error\n")
+    %end,
 
-temp(Who)->
-    %io:format("Temp actor ~p ready\n",[Who]),
+    [register(T,spawn(fun () -> temp(T) end)) || T <- ?TEMPS].
+
+
+temp(Who) ->
+    %io:format("~p is ready!\n",[Who]),
     receive
-        {Pid,{from,X,to,Y,Value}} when Y =:= Who ->
-            %io:format("to same scale ~p:~p\n",[Who,Y]),
-            X ! {Pid,res,convert(Y,Value)},
-            temp(Who);
-        {Pid,{from,X,to,Y,Value}} ->
-            %io:format("Passing to next with value converted to C° ~p:~p\n",[Who,Y]),
-            Y ! {Pid,{from,X,to,Y,convert_to_c(Who, Value)}},
-            temp(Who);
-        {Pid,res,Value} ->
-            %io:format("Recevied result to ~p redirecting to client : ~p\n",[Who,Value]),
-            Pid ! {res,Value},
-            temp(Who)
-after 10000 -> 
-    stop(),
-    exit(normal)
+        
+        {PID,{T_1,T_2,Value}} when Who == T_2 ->
+            %io:format("Received a msg from ~p to ~p : ~p\n",[T_1,T_2,Value]),
+            T_1 ! {res,PID,convert(Who,Value)},temp(Who);
+        {PID,{T_1,T_2,Value}} when Who == T_1 ->
+            %io:format("Received a msg to ~p : ~p sending it to ~p\n",[T_1,Value,T_2]),
+            T_2 ! {PID,{T_1,T_2,convert_to_c(Who,Value)}},temp(Who);
+        {res,PID,Value} -> 
+            %io:format("Recevied a result:~p forwarding to client:~p\n",[Value,PID]),
+            PID ! {res,Value},temp(Who);
+        Any -> io:format("Any: ~p\n",[Any]),temp(Who)
 end.
-
-stop() ->
-    [try
-        unregister(X) 
-    catch
-         Any:E -> io:format("~p#~p---~p\n",[X,Any,E])
-    end || X <- ?Temps].
 
 convert(T,Temp) ->
     case T of
@@ -55,4 +59,3 @@ convert_to_c(T,Temp) ->
         'Re'  -> Temp * (5/4);
         'Ro'  -> (Temp - 7.5) * (40/21)
 end.
-
