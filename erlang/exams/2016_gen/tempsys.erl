@@ -2,6 +2,16 @@
 -export([startsys/0]).
 -define(TEMPS,['C','F','K','R','De','N','Re','Ro']).
 
+%% This solution is WRONG!!!
+%% the correct one should have 2 sets of nodes one for converting from "From_Temp" to Celcius,
+%% another set to convert form Celcius to "To_Temp".
+%% the msg has to travel from client to to_celcius (which converts to celicius the given from_temp) 
+%% then to from_celcius (which converts from celcius to the given to_temp).
+%% finally the msg have to travel back to client from from_celcius node to to_celcius node then to client
+%% 
+%% msg -> client -> to_celcius -> from_celcius
+%% result -> from_celcius -> to_celcius -> client
+
 startsys() -> 
     %try [unregister(X) || X <- ?TEMPS]
     %    catch _ -> io:format("Error\n")
